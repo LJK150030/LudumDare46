@@ -55,12 +55,7 @@ void App::Startup()
 	//UnitTestsRunAllCategories(1);
 	
 	EngineStartup();
-	g_profiler->ProfilerResume();
-	UnitTestsRun("LoggingSystem", 0);
-	g_theWindow->SetMouseMode(MOUSE_MODE_RELATIVE);
-// 	g_theWindow->LockMouse();
-// 	g_theWindow->ShowMouse();
-// 	g_theWindow->HideMouse();
+	g_theWindow->SetMouseMode(MOUSE_MODE_ABSOLUTE);
 	
 	m_theGame = new Game;
 	
@@ -71,95 +66,41 @@ void App::Startup()
 	m_theGame->Startup();
 
 	g_theEventSystem->SubscribeEventCallbackFunction("quit", QuitRequest);
-	g_theEventSystem->SubscribeEventCallbackFunction("ShowMemAlloc", PrintMemAlloc);
-	g_theEventSystem->SubscribeEventCallbackFunction("LogMemAlloc", LogMemAlloc);
-	DevConPrintMemTrackType();
 
-
-// 
-// 	g_profilerPool = new(TrackedAllocator::s_instance) ObjectAllocator<dummy>();
-// 	g_profilerPool->Init(&TrackedAllocator::s_instance, 10);
-// 
-// 
-// 	dummy* one = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	one->color = Rgba::MAGENTA;
-// 	dummy* two = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* three = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* four = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* five = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* six = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* seven = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	seven->idenity = Vec3(1.0f, 2.0f, 3.0f);
-// 	dummy* eight = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* nine = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	// 	dummy* ten = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy*)));
-// 	// 	*ten = 10;
-// 
-// 	dummy* one2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* two2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* three2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* four2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* five2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* six2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* seven2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 
-// 	g_profilerPool->Free(four2);
-// 
-// 	dummy* eight2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* nine2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 	dummy* ten2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-// 
-// 	g_profilerPool->Free(one2);
-// 
-// 	dummy* eleven2 = static_cast<dummy*>(g_profilerPool->Alloc(sizeof(dummy)));
-	PythonSystemStartup();
 }
 
 void App::Shutdown()
 {
-/*	g_profilerPool->DeInit();*/
-	Reports report;
-	report.DebugPrintReport();
-
 	m_theGame->Shutdown();
-	PythonSystemShutdown();
 	EngineShutdown();
 }
 
 void App::RunFrame()
 {
-	g_profiler->ProfileBeginFrame("RunFrame");
 	BeginFrame();
 	Update();
 	Render();
 	EndFrame();
-	g_profiler->ProfileEndFrame();
 }
 
 void App::BeginFrame() const
 {
-	g_profiler->ProfilePush("App::BeginFrame");
 	g_theRenderer->BeginFrame();
 	g_theEventSystem->BeginFrame();
 	g_theDevConsole->BeginFrame();
 	g_theDebugRenderer->BeginFrame();
 	g_theAudio->BeginFrame();
-	g_profiler->ProfilePop();
 }
 
 void App::Update()
 {
-	g_profiler->ProfilePush("App::Update");
 	const double current_time = GetCurrentTimeSeconds();
-	//double delta_seconds = ClampDouble(current_time - m_timeLastFrame, 0.0, 0.1);
 	double delta_seconds = current_time - m_timeLastFrame;;
 	m_timeLastFrame = current_time;
-	
 
 	g_theClock->Step(delta_seconds);
 	g_theDevConsole->Update(g_theClock->m_frameTime);
 	m_theGame->Update(g_theClock->m_frameTime);
-	g_profiler->ProfilePop();
 }
 
 void App::Render() const
@@ -168,7 +109,6 @@ void App::Render() const
 	m_theGame->Render();
 	g_theDebugRenderer->RenderToScreen();
 
-	m_theGame->UpdateImGUI();
 
 	if(DEV_CONSOLE_IN_USE)
 	{
@@ -228,14 +168,6 @@ bool App::HandleKeyPressed(const unsigned char key_code)
 			m_isPaused = true;
 		return true;
 
-	case Q_KEY:
-		g_profiler->ProfilerPause();
-		return true;
-
-	case E_KEY:
-		g_profiler->ProfilerResume();
-		return true;
-	
 	case F1_KEY:
 		if (!DEV_CONSOLE_IN_USE)
 			m_theGame->SetDeveloperMode(true);

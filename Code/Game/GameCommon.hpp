@@ -22,9 +22,8 @@ constexpr float WORLD_ASPECT = 1.7777777777777778f;
 constexpr int NUM_DISC_VERTICES = 16;
 
 //Camera global variables
-constexpr float WORLD_WIDTH = 71.1111111110f;
-constexpr float WORLD_HEIGHT = 40.0f;
-constexpr float WORLD_CENTER_X = WORLD_WIDTH / 2.f;
+constexpr float WORLD_HEIGHT = 100.0f;
+constexpr float WORLD_CENTER_X = (WORLD_HEIGHT * WORLD_ASPECT) / 2.f;
 constexpr float WORLD_CENTER_Y = WORLD_HEIGHT / 2.f;
 
 // key codes
