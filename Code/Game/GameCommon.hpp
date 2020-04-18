@@ -15,6 +15,8 @@ class AudioSystem;
 extern App* g_theApp;
 extern AudioSystem* g_theAudio;
 
+typedef unsigned int uint;
+
 //Window config
 constexpr float WORLD_ASPECT = 1.7777777777777778f;
 

@@ -73,7 +73,7 @@ void Game::Render() const
 	m_gameCamera->SetModelMatrix(cam_model);
 
 	g_theRenderer->BeginCamera(m_gameCamera);
-	g_theRenderer->ClearScreen(Rgba::BLUE);
+	g_theRenderer->ClearScreen(Rgba::CYAN);
 	g_theRenderer->ClearDepthStencilTarget(1.0f);
 
  	g_theRenderer->BindModelMatrix(m_cubeTransform);

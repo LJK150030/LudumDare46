@@ -8,6 +8,9 @@
     <Filter Include="Data">
       <UniqueIdentifier>{708d39a6-5742-4990-868d-6e953e4ef68b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="General\Entity">
+      <UniqueIdentifier>{e51f29bc-9430-4ed0-8f58-b9e1eebeba08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -22,8 +25,11 @@
     <ClCompile Include="Game.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>General</Filter>
+    <ClCompile Include="BaseEntity.cpp">
+      <Filter>General\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="MovingEntity.cpp">
+      <Filter>General\Entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -36,11 +42,14 @@
     <ClInclude Include="Game.hpp">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="Entity.hpp">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="EngineBuildPreferences.hpp">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseEntity.hpp">
+      <Filter>General\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="MovingEntity.hpp">
+      <Filter>General\Entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
