@@ -2,6 +2,7 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/Matrix33.hpp"
 
 MovingEntity::MovingEntity(const Vec2& position, float bound_radius, const Vec2& velocity, 
 	float max_speed, const Vec2& forward_norm, float mass, const Vec2& scale, 
@@ -119,15 +120,29 @@ bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
 	const float dot_product = DotProduct(m_forward, pos_to_target);
 	const float angle_radians = ArcCosRadians(dot_product);
 
-	//If we are facing it, then we don't need to rotate
+	// If we are facing it, then we don't need to rotate
 	if(IsZero(angle_radians))
 	{
 		return true;
 	}
 
-	//otherwise, rotate by the maximum amount
+	// otherwise clamp to rotating speed
 	float angle_degrees = ConvertRadiansToDegrees(angle_radians);
-	float rotate_amount = GetTurnedToward()
+	if(angle_degrees > m_maxTurnSpeedDeg)
+	{
+		angle_degrees = m_maxTurnSpeedDeg;
+	}
+
+	//using matrix to rotate the forward vector
+	Matrix33 RotationMatrix;
+	RotationMatrix.RotateDeg(angle_degrees * m_forward.GetRotationSignFromDir(pos_to_target));
+	RotationMatrix.TransformPoint(m_forward);
+	RotationMatrix.TransformPoint(m_velocity);
+
+	//finally recreate m_vSide
+	m_tangent = m_forward.GetRotated90Degrees();
+
+	return false;
 }
 
 
