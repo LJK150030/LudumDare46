@@ -3,8 +3,6 @@
 
 class MovingEntity : public BaseEntity
 {
-public:
-
 protected:
 	Vec2	m_velocity;
 
@@ -13,8 +11,9 @@ protected:
 	Vec2	m_tangent;
 
 	float m_mass;
+	float m_inverseMass;
 	float m_maxSpeed;			// meters per second
-	float m_maxAcceleration;	// meters per second^2
+	float m_maxForce;			// newtons
 	float m_maxTurnSpeedDeg;	// degrees per second
 
 private:
@@ -23,7 +22,7 @@ private:
 public:
 	explicit MovingEntity(const Vec2& position, float bound_radius, const Vec2& velocity, float max_speed,
 		const Vec2& forward_norm, float mass, const Vec2& scale, float max_turn_speed_deg,
-		float max_acceleration);
+		float max_force);
 	virtual ~MovingEntity();
 
 	// Accessors
@@ -35,13 +34,13 @@ public:
 	Vec2	GetTangent() const;
 	float	GetMass() const;
 	float	GetMaxSpeed() const;
-	float	GetMaxAcceleration() const;
+	float	GetMaxForce() const;
 	float	GetMaxTurnSpeedDeg() const;
 	
 	// Mutators
 	void SetVelocity(const Vec2& new_vel);
 	void SetMaxSpeed(float new_max_speed);
-	void SetMaxAcceleration(float new_max_acc);
+	void SetMaxForce(float new_max_force);
 	void SetForward(const Vec2& new_forward_normal);
 	bool RotateForwardToFaceTarget(const Vec2& target_pos);
 	void SetMaxTurnSpeed(float new_turn_speed_deg);

@@ -28,9 +28,9 @@ BaseEntity::~BaseEntity()
 }
 
 
-void BaseEntity::Update(double time_elapsed)
+void BaseEntity::Update(double delta_seconds)
 {
-	UNUSED(time_elapsed);
+	UNUSED(delta_seconds);
 }
 
 

@@ -31,6 +31,12 @@
     <ClCompile Include="MovingEntity.cpp">
       <Filter>General\Entity</Filter>
     </ClCompile>
+    <ClCompile Include="Vehicle.cpp">
+      <Filter>General\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="SteeringBehavior.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -50,6 +56,12 @@
     </ClInclude>
     <ClInclude Include="MovingEntity.hpp">
       <Filter>General\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicle.hpp">
+      <Filter>General\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="SteeringBehavior.hpp">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,11 +6,14 @@
 
 MovingEntity::MovingEntity(const Vec2& position, float bound_radius, const Vec2& velocity, 
 	float max_speed, const Vec2& forward_norm, float mass, const Vec2& scale, 
-	float max_turn_speed_deg, float max_acceleration): BaseEntity(0, position, bound_radius),
+	float max_turn_speed_deg, float max_force): BaseEntity(0, position, bound_radius),
 	m_velocity(velocity), m_forward(forward_norm), m_tangent(forward_norm.GetRotated90Degrees()),
-	m_mass(mass), m_maxSpeed(max_speed), m_maxAcceleration(max_acceleration),
+	m_mass(mass), m_maxSpeed(max_speed), m_maxForce(max_force),
 	m_maxTurnSpeedDeg(max_turn_speed_deg)
 {
+	ASSERT_OR_DIE(!IsZero(mass), "Cannot have a movingf entity with 0 mass.");
+
+	m_inverseMass = 1.0f / mass;
 	m_scale = scale;
 }
 
@@ -71,9 +74,9 @@ float MovingEntity::GetMaxSpeed() const
 }
 
 
-float MovingEntity::GetMaxAcceleration() const
+float MovingEntity::GetMaxForce() const
 {
-	return m_maxAcceleration;
+	return m_maxForce;
 }
 
 
@@ -94,9 +97,9 @@ void MovingEntity::SetMaxSpeed(float new_max_speed)
 }
 
 
-void MovingEntity::SetMaxAcceleration(float new_max_acc)
+void MovingEntity::SetMaxForce(float new_max_force)
 {
-	m_maxAcceleration = new_max_acc;
+	m_maxForce = new_max_force;
 }
 
 
@@ -143,6 +146,12 @@ bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
 	m_tangent = m_forward.GetRotated90Degrees();
 
 	return false;
+}
+
+
+void MovingEntity::SetMaxTurnSpeed(float new_turn_speed_deg)
+{
+	m_maxTurnSpeedDeg = new_turn_speed_deg;
 }
 
 

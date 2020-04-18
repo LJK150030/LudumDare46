@@ -30,7 +30,7 @@ public:
 	virtual ~BaseEntity();
 
 	// Common
-	virtual void Update(double time_elapsed);
+	virtual void Update(double delta_seconds);
 	virtual void Render() const;
 	//virtual bool HandleMessage(const Telegram& msg);
 	//virtual void WriteBlackboard();
