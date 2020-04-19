@@ -16,6 +16,7 @@ Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, cons
 	m_theGame(game)
 {
 	m_steering = new SteeringBehavior(this);
+	SetEntityType(ENTITY_VEHICLE);
 }
 
 

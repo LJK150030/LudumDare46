@@ -6,13 +6,7 @@ class GPUMesh;
 class Material;
 
 class BaseEntity
-{
-public:
-	enum
-	{
-		DEFAULT_ENTITY_TYPE = -1
-	};
-
+{	
 protected:
 	float	m_boundingRadius;
 
@@ -31,14 +25,20 @@ private:
 
 
 public:
+	// Really should not be  calling Base entity constructor, only allow children to call this
+	BaseEntity();
+	explicit BaseEntity(int entity_type);
+	explicit BaseEntity(int entity_type, const Vec2& pos, float bounding_radius);
 	virtual ~BaseEntity();
+
+	//Initializers
+	virtual void Init();
+	virtual void InitVisuals();
 
 	// Common
 	virtual void Update(double delta_seconds);
 	virtual void Render() const;
-	//virtual bool HandleMessage(const Telegram& msg);
-	//virtual void WriteBlackboard();
-	//virtual void ReadBlackboard();
+
 	
 	// Accessors
 	Vec2	GetPosition() const;
@@ -56,17 +56,8 @@ public:
 	void	SetEntityType(int new_type);
 	void	Tag();
 	void	UnTag();
-	
-protected:
-	BaseEntity();
-	explicit BaseEntity(int entity_type);
-	explicit BaseEntity(int entity_type, const Vec2& pos, float bounding_radius);
 
-	//Initializers
-	virtual void Init();
-	virtual void InitVisuals();
 
 private:
-	// Helper 
 	uint NextValidID();
 };

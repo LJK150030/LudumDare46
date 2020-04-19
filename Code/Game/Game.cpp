@@ -42,9 +42,15 @@ void Game::Startup()
 	m_woodMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
 
 	//Setup Game entities
-	m_vehicles = std::vector<Vehicle*>();
 	m_obstacles = std::vector<BaseEntity*>();
+	m_obstacles.push_back(new BaseEntity(
+		DEFAULT_ENTITY_TYPE,
+		Vec2::ZERO,
+		10.0f)
+	);
+	m_obstacles[0]->Init();
 	
+	m_vehicles = std::vector<Vehicle*>();
 	m_vehicles.push_back(new Vehicle(
 		this, 
 		Vec2(-50.0f, -50.0f), 
@@ -100,6 +106,13 @@ void Game::Shutdown()
 		m_vehicles[vehicles_idx] = nullptr;
 	}
 
+	const int num_obstacles = static_cast<int>(m_obstacles.size());
+	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
+	{
+		delete m_obstacles[obstacle_idx];
+		m_obstacles[obstacle_idx] = nullptr;
+	}
+
 	delete m_cube;
 	m_cube = nullptr;
 	
@@ -117,6 +130,12 @@ void Game::Update(const double delta_seconds)
 	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
 	{
 		m_vehicles[vehicles_idx]->Update(delta_seconds);
+	}
+
+	const int num_obstacles = static_cast<int>(m_obstacles.size());
+	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
+	{
+		m_obstacles[obstacle_idx]->Update(delta_seconds);
 	}
 }
 
@@ -142,6 +161,12 @@ void Game::Render() const
 	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
 	{
 		m_vehicles[vehicles_idx]->Render();
+	}
+
+	const int num_obstacles = static_cast<int>(m_obstacles.size());
+	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
+	{
+		m_obstacles[obstacle_idx]->Render();
 	}
  
 	g_theRenderer->EndCamera(m_gameCamera);

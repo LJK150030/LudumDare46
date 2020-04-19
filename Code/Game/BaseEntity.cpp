@@ -38,7 +38,7 @@ BaseEntity::~BaseEntity()
 }
 
 
-void BaseEntity::Update(double delta_seconds)
+void BaseEntity::Update(const double delta_seconds)
 {
 	UNUSED(delta_seconds);
 }
@@ -46,6 +46,9 @@ void BaseEntity::Update(double delta_seconds)
 
 void BaseEntity::Render() const
 {
+	g_theRenderer->BindModelMatrix(m_modelMatrix);
+	g_theRenderer->BindMaterial(*m_material);
+	g_theRenderer->DrawMesh(*m_mesh);
 }
 
 
@@ -58,14 +61,14 @@ void BaseEntity::Init()
 void BaseEntity::InitVisuals()
 {
 	// Get Everything to draw the triangle
-	m_material = g_theRenderer->CreateOrGetMaterial("white", false);
+	m_material = g_theRenderer->CreateOrGetMaterial("Magenta", false);
 	m_material->SetShader("default_lit.hlsl");
 	m_material->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
-	TextureView* white_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFFFFFFFF")));
+	TextureView* white_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFF00FFFF")));
 	m_material->SetDiffuseMap(white_texture);
 
 	CPUMesh disc_mesh;
-	CpuMeshAddDisc(&disc_mesh, Rgba::WHITE, GetBoundingRadius());
+	CpuMeshAddDisc(&disc_mesh, Rgba::WHITE, 1.0f);
 	m_mesh = new GPUMesh(g_theRenderer);
 	m_mesh->CreateFromCPUMesh<Vertex_Lit>(disc_mesh);
 }
@@ -121,7 +124,7 @@ void BaseEntity::SetScale(const Vec2& new_scale)
 }
 
 
-void BaseEntity::SetScale(float scalar_value)
+void BaseEntity::SetScale(const float scalar_value)
 {
 	const Vec2 scale = GetScale();
 	m_boundingRadius *= (scalar_value / Max(scale.x, scale.y));
@@ -129,13 +132,13 @@ void BaseEntity::SetScale(float scalar_value)
 }
 
 
-void BaseEntity::SetBoundingRadius(float new_radius)
+void BaseEntity::SetBoundingRadius(const float new_radius)
 {
 	m_boundingRadius = new_radius;
 }
 
 
-void BaseEntity::SetEntityType(int new_type)
+void BaseEntity::SetEntityType(const int new_type)
 {
 	m_entityType = new_type;
 }

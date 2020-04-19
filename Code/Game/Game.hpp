@@ -17,17 +17,21 @@ public:
 	bool m_inDevMode;
 
 private:
+	//Game objects
+	std::vector<Vehicle*>			m_vehicles;
+	std::vector<BaseEntity*>		m_obstacles;
+	
+	//Camera
 	Camera* m_gameCamera = nullptr;
 	Shader* m_defaultShader = nullptr;
 	Vec3 m_camPosition = Vec3(0.0f, 0.0f, 0.01f);
 	Vec3 m_camEuler = Vec3(0.0f, 0.0f, 0.0f);
 
+	//Game meta data
 	float m_time;
 	float m_cameraTime = 0.0f;
 	int m_currentFrame = 0;
-
-	std::vector<Vehicle*>			m_vehicles;
-	std::vector<BaseEntity*>		m_obstacles;
+	
 	// box "entity"
 	GPUMesh* m_cube = nullptr;
 	Matrix44 m_cubeTransform = Matrix44::IDENTITY;

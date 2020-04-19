@@ -87,6 +87,17 @@ constexpr float SCREEN_SHAKE_REDUCTION = 1.0f;
 //One-off drawing functions
 void DrawLine(const Vec2& start, const Vec2& end, float thickness, const Rgba& tint);
 
+enum EntityType
+{
+	DEFAULT_ENTITY_TYPE = -1,
+
+	ENTITY_MOVING,
+	ENTITY_VEHICLE,
+
+	NUM_ENTITY_TYPES
+};
+
+
 enum Behavior
 {
 	CONSTANT_DIR = -1,

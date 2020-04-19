@@ -11,10 +11,10 @@ MovingEntity::MovingEntity(const Vec2& position, float bound_radius, const Vec2&
 	m_maxTurnSpeedDeg(max_turn_speed_deg)
 {
 	ASSERT_OR_DIE(!IsZero(mass), "Cannot have a movingf entity with 0 mass.");
-
 	m_inverseMass = 1.0f / mass;
 	SetScale(scale);
 	SetForward(forward_norm);
+	SetEntityType(ENTITY_MOVING);
 }
 
 
@@ -97,13 +97,13 @@ void MovingEntity::SetVelocity(const Vec2& new_vel)
 	m_velocity = new_vel;
 }
 
-void MovingEntity::SetMaxSpeed(float new_max_speed)
+void MovingEntity::SetMaxSpeed(const float new_max_speed)
 {
 	m_maxSpeed = new_max_speed;
 }
 
 
-void MovingEntity::SetMaxForce(float new_max_force)
+void MovingEntity::SetMaxForce(const float new_max_force)
 {
 	m_maxForce = new_max_force;
 }
@@ -156,7 +156,7 @@ bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
 }
 
 
-void MovingEntity::SetMaxTurnSpeed(float new_turn_speed_deg)
+void MovingEntity::SetMaxTurnSpeed(const float new_turn_speed_deg)
 {
 	m_maxTurnSpeedDeg = new_turn_speed_deg;
 }
