@@ -45,12 +45,7 @@ Vehicle::~Vehicle()
 
 void Vehicle::Update(const double delta_seconds)
 {
-	if(m_movingTarget != nullptr)
-	{
-		m_target = m_movingTarget->GetPosition();
-	}
-	
-	const Vec2 steering_force = m_steering->Calculate(m_behavior, m_target, m_movingTarget, 1.0f);
+	const Vec2 steering_force = m_steering->Calculate(m_behavior, 1.0f);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
@@ -95,16 +90,21 @@ void Vehicle::Render() const
 	}
 }
 
-
 void Vehicle::SetTarget(const Vec2& target_pos)
 {
-	m_target = target_pos;
-	m_movingTarget = nullptr;
+	m_steering->SetTarget(target_pos);
 }
 
-void Vehicle::SetTarget(const Vehicle* target_pos)
+void Vehicle::PursuitOn(const Vehicle* moving_target)
 {
-	m_movingTarget = target_pos;
+	m_steering->SetMovingTarget(moving_target);
+	m_behavior = STEER_PURSUIT;
+}
+
+void Vehicle::EvadeFrom(const Vehicle* moving_target)
+{
+	m_steering->SetMovingTarget(moving_target);
+	m_behavior = STEER_EVADE;
 }
 
 

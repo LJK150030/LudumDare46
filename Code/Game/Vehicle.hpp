@@ -14,10 +14,6 @@ private:
 	SteeringBehavior*	m_steering = nullptr;
 	Behavior			m_behavior = CONSTANT_DIR;
 
-	//Targeting
-	Vec2			m_target = Vec2::ZERO;
-	const Vehicle*	m_movingTarget = nullptr;
-
 	//debugging
 	Matrix44	m_modelMatrix = Matrix44::IDENTITY;
 	Material*	m_material = nullptr;
@@ -37,8 +33,11 @@ public:
 	
 	void	Update(double delta_seconds) override;
 	void	Render() const override;
+
+	
 	void	SetTarget(const Vec2& target_pos);
-	void	SetTarget(const Vehicle* target_pos);
+	void	PursuitOn(const Vehicle* moving_target);
+	void	EvadeFrom(const Vehicle* moving_target);
 
 private:
 	void InitVisuals();

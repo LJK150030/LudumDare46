@@ -80,8 +80,11 @@ void Game::Startup()
 			5.0f,
 			STEER_PURSUIT));
 
-		m_vehicles[veh_idx]->SetTarget(m_vehicles[0]);
+		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
 	}
+
+	m_vehicles[0]->EvadeFrom(m_vehicles[1]);
+
 }
 
 void Game::Shutdown()

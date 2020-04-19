@@ -12,8 +12,7 @@ SteeringBehavior::~SteeringBehavior()
 }
 
 
-Vec2 SteeringBehavior::Calculate(const Behavior behavior, const Vec2& target_pos, const Vehicle* evader, 
-	const float scalar_modifier)
+Vec2 SteeringBehavior::Calculate(const Behavior behavior, const float scalar_modifier)
 {
 	switch(behavior)
 	{
@@ -23,21 +22,28 @@ Vec2 SteeringBehavior::Calculate(const Behavior behavior, const Vec2& target_pos
 		}
 		case STEER_SEEK:
 		{
-			return Seek(target_pos);
+			return Seek(m_target);
 		}
 		case STEER_FLEE:
 		{
-			return Flee(target_pos);
+			return Flee(m_target);
 		}
 		case STEER_ARRIVE:
 		{
-			return Arrive(target_pos, scalar_modifier);
+			return Arrive(m_target, scalar_modifier);
 		}
 		case STEER_PURSUIT:
 		{
-			if(evader != nullptr)
+			if(m_movingTarget != nullptr)
 			{
-				return Pursuit(evader);
+				return Pursuit(m_movingTarget);
+			}
+		}
+		case STEER_EVADE:
+		{
+			if (m_movingTarget != nullptr)
+			{
+				return Evade(m_movingTarget);
 			}
 		}
 		default:
@@ -116,6 +122,18 @@ Vec2 SteeringBehavior::Pursuit(const Vehicle* evader, const float heading_toward
 }
 
 
+Vec2 SteeringBehavior::Evade(const Vehicle* pursuer)
+{
+	const Vec2 to_pursuer = pursuer->GetPosition() - m_vehicle->GetPosition();
+
+	const float sum_of_vehicles_velocity = m_vehicle->GetMaxSpeed() + pursuer->GetSpeed();
+	float look_ahead_time = to_pursuer.GetLength() / sum_of_vehicles_velocity;
+
+	const Vec2 predicted_position = pursuer->GetPosition() + pursuer->GetVelocity() * look_ahead_time;
+	return Flee(predicted_position);
+}
+
+
 float SteeringBehavior::TurnaroundTime(const Vehicle* agent, const Vec2& target_pos, const float coefficient) const
 {
 	Vec2 to_target = target_pos - m_vehicle->GetPosition();
@@ -125,4 +143,17 @@ float SteeringBehavior::TurnaroundTime(const Vehicle* agent, const Vec2& target_
 	const float offset_rel_dir = relative_direction - 1.0f;
 	const float flip_with_coefficient = offset_rel_dir * coefficient;
 	return flip_with_coefficient;
+}
+
+
+void SteeringBehavior::SetTarget(const Vec2& target_pos)
+{
+	m_target = target_pos;
+	m_movingTarget = nullptr;
+}
+
+
+void SteeringBehavior::SetMovingTarget(const Vehicle* target_pos)
+{
+	m_movingTarget = target_pos;
 }
