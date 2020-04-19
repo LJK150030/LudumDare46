@@ -45,8 +45,12 @@ Vehicle::~Vehicle()
 
 void Vehicle::Update(const double delta_seconds)
 {
-	//debugging
-	const Vec2 steering_force = m_steering->Calculate(m_behavior, m_target, 1.0f);
+	if(m_movingTarget != nullptr)
+	{
+		m_target = m_movingTarget->GetPosition();
+	}
+	
+	const Vec2 steering_force = m_steering->Calculate(m_behavior, m_target, m_movingTarget, 1.0f);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
@@ -71,7 +75,11 @@ void Vehicle::Update(const double delta_seconds)
 
 
 	UpdateModelMatrix();
-	UpdateDebugArrows(steering_force);
+
+	if(m_theGame->m_inDevMode)
+	{
+		UpdateDebugArrows(steering_force);
+	}
 }
 
 
@@ -81,20 +89,22 @@ void Vehicle::Render() const
 	g_theRenderer->BindMaterial(*m_material);
 	g_theRenderer->DrawMesh(*m_mesh);
 
-
-	// if Debugging
-	g_theRenderer->BindModelMatrix(Matrix44::IDENTITY);
-	g_theRenderer->BindMaterial(*m_forwardMaterial);
-	g_theRenderer->DrawMesh(*m_forwardMesh);
-
-	g_theRenderer->BindMaterial(*m_steeringMaterial);
-	g_theRenderer->DrawMesh(*m_steeringMesh);
+	if (m_theGame->m_inDevMode)
+	{
+		RenderDebugArrows();
+	}
 }
 
 
 void Vehicle::SetTarget(const Vec2& target_pos)
 {
 	m_target = target_pos;
+	m_movingTarget = nullptr;
+}
+
+void Vehicle::SetTarget(const Vehicle* target_pos)
+{
+	m_movingTarget = target_pos;
 }
 
 
@@ -108,7 +118,7 @@ void Vehicle::InitVisuals()
 	m_material->SetDiffuseMap(white_texture);
 
 	CPUMesh triangle_mesh;
-	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), Rgba::RED);
+	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), Rgba::WHITE);
 	m_mesh = new GPUMesh(g_theRenderer);
 	m_mesh->CreateFromCPUMesh<Vertex_Lit>(triangle_mesh);
 }
@@ -177,4 +187,16 @@ void Vehicle::UpdateDebugArrows(const Vec2& steering_force)
 	CpuMeshAddLine(&steering_line_mesh, m_position, m_position + steering_force, 1.0f, Rgba::RED);
 	m_steeringMesh = new GPUMesh(g_theRenderer);
 	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
+}
+
+
+void Vehicle::RenderDebugArrows() const
+{
+	// if Debugging
+	g_theRenderer->BindModelMatrix(Matrix44::IDENTITY);
+	g_theRenderer->BindMaterial(*m_forwardMaterial);
+	g_theRenderer->DrawMesh(*m_forwardMesh);
+
+	g_theRenderer->BindMaterial(*m_steeringMaterial);
+	g_theRenderer->DrawMesh(*m_steeringMesh);
 }
