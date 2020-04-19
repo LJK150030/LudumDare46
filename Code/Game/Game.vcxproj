@@ -210,6 +210,7 @@
     <ClInclude Include="App.hpp" />
     <ClInclude Include="EngineBuildPreferences.hpp" />
     <ClInclude Include="BaseEntity.hpp" />
+    <ClInclude Include="EntityFunctionTemplates.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="MovingEntity.hpp" />

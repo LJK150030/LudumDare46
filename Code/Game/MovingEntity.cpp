@@ -7,14 +7,14 @@
 MovingEntity::MovingEntity(const Vec2& position, float bound_radius, const Vec2& velocity, 
 	float max_speed, const Vec2& forward_norm, float mass, const Vec2& scale, 
 	float max_turn_speed_deg, float max_force): BaseEntity(0, position, bound_radius),
-	m_velocity(velocity), m_forward(forward_norm), m_tangent(forward_norm.GetRotated90Degrees()),
-	m_mass(mass), m_maxSpeed(max_speed), m_maxForce(max_force),
+	m_velocity(velocity), m_mass(mass), m_maxSpeed(max_speed), m_maxForce(max_force),
 	m_maxTurnSpeedDeg(max_turn_speed_deg)
 {
 	ASSERT_OR_DIE(!IsZero(mass), "Cannot have a movingf entity with 0 mass.");
 
 	m_inverseMass = 1.0f / mass;
-	m_scale = scale;
+	SetScale(scale);
+	SetForward(forward_norm);
 }
 
 
@@ -52,13 +52,13 @@ bool MovingEntity::IsSpeedMaxedOut() const
 
 Vec2 MovingEntity::GetForward() const
 {
-	return m_forward;
+	return m_modelMatrix.GetIvec2();
 }
 
 
 Vec2 MovingEntity::GetTangent() const
 {
-	return m_tangent;
+	return m_modelMatrix.GetJvec2();
 }
 
 
@@ -87,7 +87,8 @@ float MovingEntity::GetMaxTurnSpeedDeg() const
 
 float MovingEntity::GetRotationDegrees() const
 {
-	return Atan2Degrees(m_forward.y, m_forward.x);
+	const Vec2 forward = GetForward();
+	return Atan2Degrees(forward.y, forward.x);
 }
 
 
@@ -110,22 +111,24 @@ void MovingEntity::SetMaxForce(float new_max_force)
 
 void MovingEntity::SetForward(const Vec2& new_forward_normal)
 {
-	float new_forward_length_sq = new_forward_normal.GetLengthSquared();
-	float zero_test = new_forward_length_sq - 1.0f;
-	ASSERT_OR_DIE(IsZero(zero_test), "Forward vector is not normalized.")
+	const float new_forward_length_sq = new_forward_normal.GetLengthSquared();
+	const float zero_test = new_forward_length_sq - 1.0f;
+	ASSERT_OR_DIE(IsZero(zero_test), "Forward vector is not normalized.");
 
-	m_forward = new_forward_normal;
-	m_tangent = m_forward.GetRotated90Degrees();
+	m_modelMatrix.SetIvec(new_forward_normal);
+	m_modelMatrix.SetJvec(new_forward_normal.GetRotated90Degrees());
 }
 
 
 bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
 {
-	Vec2 pos_to_target = target_pos - m_position;
+	const Vec2 pos = GetPosition();
+	Vec2 pos_to_target = target_pos - pos;
 	pos_to_target.Normalize();
 
 	// A dot B = |A|*|B|*cos(theta)
-	const float dot_product = DotProduct(m_forward, pos_to_target);
+	const Vec2 forward = GetForward();
+	const float dot_product = DotProduct(forward, pos_to_target);
 	const float angle_radians = ArcCosRadians(dot_product);
 
 	// If we are facing it, then we don't need to rotate
@@ -142,14 +145,13 @@ bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
 	}
 
 	//using matrix to rotate the forward vector
-	Matrix33 RotationMatrix;
-	RotationMatrix.RotateDeg(angle_degrees * m_forward.GetRotationSignFromDir(pos_to_target));
-	RotationMatrix.TransformPoint(m_forward);
-	RotationMatrix.TransformPoint(m_velocity);
+	const float sign = forward.GetRotationSignFromDir(pos_to_target);
+	const float rotate_deg = angle_degrees * sign;
+	const Matrix44 rotation_matrix = Matrix44::MakeZRotationDegrees(rotate_deg);
+	m_modelMatrix.SetRotationMatrix(rotation_matrix);
 
-	//finally recreate m_vSide
-	m_tangent = m_forward.GetRotated90Degrees();
-
+	m_velocity = m_modelMatrix.GetTransformVector2D(m_velocity);
+	
 	return false;
 }
 

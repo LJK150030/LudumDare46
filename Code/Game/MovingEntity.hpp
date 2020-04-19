@@ -5,16 +5,11 @@ class MovingEntity : public BaseEntity
 {
 protected:
 	Vec2	m_velocity;
-
-	// local coord
-	Vec2	m_forward;
-	Vec2	m_tangent;
-
-	float m_mass;
-	float m_inverseMass;
-	float m_maxSpeed;			// meters per second
-	float m_maxForce;			// newtons
-	float m_maxTurnSpeedDeg;	// degrees per second
+	float	m_mass;
+	float	m_inverseMass;
+	float	m_maxSpeed;			// meters per second
+	float	m_maxForce;			// newtons
+	float	m_maxTurnSpeedDeg;	// degrees per second
 
 private:
 

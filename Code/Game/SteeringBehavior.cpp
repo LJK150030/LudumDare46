@@ -1,6 +1,9 @@
 #include "Game/SteeringBehavior.hpp"
 #include "Game/Vehicle.hpp"
+#include "Game/Game.hpp"
+
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/Ray2.hpp"
 
 SteeringBehavior::SteeringBehavior(Vehicle* agent) : m_vehicle(agent), m_wanderTarget(agent->GetPosition())
 {
@@ -152,6 +155,81 @@ Vec2 SteeringBehavior::Wander()
 
 	Vec2 steering_force = target_world - m_vehicle->GetPosition();
 	return steering_force;
+}
+
+
+Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacles)
+{
+	const float frac_of_speed = m_vehicle->GetSpeed() / m_vehicle->GetMaxSpeed();
+	const float detection_box_length = m_minLookAhead + m_minLookAhead * frac_of_speed;
+
+	// Loop through all of the obstacles and tag those that are within the objects bounding radius
+	Game* the_game = m_vehicle->GetTheGame();
+	the_game->TagObstaclesWithinDisc(m_vehicle, detection_box_length);
+
+	BaseEntity* closest_intersecting_obstacle = nullptr;
+	float distance_to_closest_intersecting_point = INFINITY;
+	Vec2 local_position_of_closest_obstacle = Vec2(INFINITY, INFINITY);
+
+	int num_obstacles = static_cast<int>(obstacles.size());
+	for(int ob_idx = 0; ob_idx < num_obstacles; ++ob_idx)
+	{
+		if(obstacles[ob_idx]->IsTagged())
+		{
+			//Transform the tagged obstacle into the vehicle's local space.
+			const Vec2 local_pos = PointToLocalSpace(obstacles[ob_idx]->GetPosition(), m_vehicle->GetForward(),
+				m_vehicle->GetTangent(), m_vehicle->GetPosition());
+
+			//Early out if the local_pos.x is negative. This means the obstacle is behind us
+			if(local_pos.x >= 0.0f)
+			{
+				const float expanded_radius = obstacles[ob_idx]->GetBoundingRadius() + m_vehicle->GetBoundingRadius();
+
+				if(Abs(local_pos.y) < expanded_radius)
+				{
+					Ray2 vehicle_ray(m_vehicle->GetPosition(), m_vehicle->GetForward());
+					float out_t[2] = { INFINITY, INFINITY };
+					const uint impact = Raycast(out_t, vehicle_ray, local_pos, expanded_radius);
+
+					switch (impact)
+					{
+						case 0: // no impact
+						{
+							break;
+						}
+						case 1: // only entering
+						{
+							if(out_t[0] > 0.0f && out_t[0] < distance_to_closest_intersecting_point)
+							{
+								distance_to_closest_intersecting_point = out_t[0];
+								closest_intersecting_obstacle = obstacles[ob_idx];
+								local_position_of_closest_obstacle = local_pos;
+							}
+							break;
+						}
+						case 2: // and entrance and exit
+						{
+							if (out_t[0] < distance_to_closest_intersecting_point)
+							{
+								distance_to_closest_intersecting_point = out_t[0];
+								closest_intersecting_obstacle = obstacles[ob_idx];
+								local_position_of_closest_obstacle = local_pos;
+							}
+							else if(out_t[1] < distance_to_closest_intersecting_point)
+							{
+								distance_to_closest_intersecting_point = out_t[1];
+								closest_intersecting_obstacle = obstacles[ob_idx];
+								local_position_of_closest_obstacle = local_pos;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return Vec2::ZERO;
 }
 
 

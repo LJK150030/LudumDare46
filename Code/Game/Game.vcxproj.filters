@@ -63,6 +63,9 @@
     <ClInclude Include="SteeringBehavior.hpp">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="EntityFunctionTemplates.hpp">
+      <Filter>General\Entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\Run\Data\GameConfig.xml">

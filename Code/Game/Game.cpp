@@ -1,6 +1,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Vehicle.hpp"
+#include "Game/EntityFunctionTemplates.hpp"
 
 #include "Engine/Core/Vertex_PCU.hpp"
 #include "Engine/Core/WindowContext.hpp"
@@ -42,6 +43,7 @@ void Game::Startup()
 
 	//Setup Game entities
 	m_vehicles = std::vector<Vehicle*>();
+	m_obstacles = std::vector<BaseEntity*>();
 	
 	m_vehicles.push_back(new Vehicle(
 		this, 
@@ -55,7 +57,8 @@ void Game::Startup()
 		5.0f));
 
 	m_vehicles[0]->WanderAround(5.0f, 10.0f, 1.0f);
-
+	m_vehicles[0]->Init();
+	
 	const int number_of_vehicles = 10;
 	for(int veh_idx = 1; veh_idx < number_of_vehicles; ++veh_idx)
 	{
@@ -81,6 +84,7 @@ void Game::Startup()
 			5.0f));
 
 		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
+		m_vehicles[veh_idx]->Init();
 	}
 
 	
@@ -166,4 +170,10 @@ void Game::SetDeveloperMode(const bool on_or_off)
 
 void Game::GarbageCollection() const
 {
+}
+
+
+void Game::TagObstaclesWithinDisc(BaseEntity* vehicle, const float range)
+{
+	TagClosestNeighbors(vehicle, m_obstacles, range);
 }

@@ -16,8 +16,6 @@ Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, cons
 	m_theGame(game)
 {
 	m_steering = new SteeringBehavior(this);
-	InitVisuals();
-	InitDebugVisuals();
 }
 
 
@@ -35,12 +33,15 @@ Vehicle::~Vehicle()
 		delete m_forwardMesh;
 		m_forwardMesh = nullptr;
 	}
-	
-	delete m_mesh;
-	m_mesh = nullptr;
 
 	delete m_steering;
 	m_steering = nullptr;
+}
+
+void Vehicle::Init()
+{
+	InitVisuals();
+	InitDebugVisuals();
 }
 
 void Vehicle::Update(const double delta_seconds)
@@ -53,23 +54,24 @@ void Vehicle::Update(const double delta_seconds)
 	// Velocity = v_0 + a*t
 	m_velocity += acceleration * static_cast<float>(delta_seconds);
 	m_velocity.ClampLength(m_maxSpeed);
-	m_position += m_velocity * static_cast<float>(delta_seconds);
+
+	Vec2 pos = GetPosition();
+	pos += m_velocity * static_cast<float>(delta_seconds);
 
 	// always update the local coordinate unless we are not moving
 		// if 0.0f then we divide by zero
 		// if VARY small, we might have floating point precision error
 	if(m_velocity.GetLengthSquared() > 0.000001f)
 	{
-		m_forward = m_velocity.GetNormalized();
-		m_tangent = m_forward.GetRotated90Degrees();
+		SetForward(m_velocity.GetNormalized());
 	}
 
 	// for debugging, if the point goes off screen, wrap it around
-	m_position.WrapAround(-1.0f * WORLD_HEIGHT * WORLD_ASPECT,
+	pos.WrapAround(-1.0f * WORLD_HEIGHT * WORLD_ASPECT,
 		-1.0f * WORLD_HEIGHT, WORLD_HEIGHT * WORLD_ASPECT, WORLD_HEIGHT);
 
-
-	UpdateModelMatrix();
+	
+	UpdateModelMatrix(pos);
 
 	if(m_theGame->m_inDevMode)
 	{
@@ -132,6 +134,12 @@ void Vehicle::WanderAround(const float radius, const float distance, const float
 }
 
 
+Game* Vehicle::GetTheGame() const
+{
+	return m_theGame;
+}
+
+
 void Vehicle::InitVisuals()
 {
 	// Get Everything to draw the triangle
@@ -177,9 +185,9 @@ void Vehicle::InitDebugVisuals()
 }
 
 
-void Vehicle::UpdateModelMatrix()
+void Vehicle::UpdateModelMatrix(const Vec2& new_pos)
 {
-	m_modelMatrix.SetTvec3(Vec3(m_position.x, m_position.y, 0.0f));
+	SetPos(new_pos);
 	const float cur_rot_deg = GetRotationDegrees();
 	const Matrix44 rotation_matrix = Matrix44::MakeZRotationDegrees(cur_rot_deg);
 	m_modelMatrix.SetRotationMatrix(rotation_matrix);
@@ -197,7 +205,14 @@ void Vehicle::UpdateDebugArrows(const Vec2& steering_force)
 	}
 
 	CPUMesh forward_line_mesh;
-	CpuMeshAddLine(&forward_line_mesh, m_position, m_position + m_forward, 1.0f, Rgba::BLACK);
+	CpuMeshAddLine(
+		&forward_line_mesh, 
+		Vec2::ZERO, 
+		Vec2(1.0f, 0.0f), 
+		1.0f, 
+		Rgba::BLACK
+	);
+	
 	m_forwardMesh = new GPUMesh(g_theRenderer);
 	m_forwardMesh->CreateFromCPUMesh<Vertex_Lit>(forward_line_mesh);
 
@@ -208,7 +223,14 @@ void Vehicle::UpdateDebugArrows(const Vec2& steering_force)
 	}
 
 	CPUMesh steering_line_mesh;
-	CpuMeshAddLine(&steering_line_mesh, m_position, m_position + steering_force, 1.0f, Rgba::RED);
+	CpuMeshAddLine(
+		&steering_line_mesh, 
+		Vec2::ZERO, 
+		Vec2(steering_force.GetLength(), 0.0f),
+		1.0f, 
+		Rgba::RED
+	);
+	
 	m_steeringMesh = new GPUMesh(g_theRenderer);
 	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
 }
@@ -217,7 +239,6 @@ void Vehicle::UpdateDebugArrows(const Vec2& steering_force)
 void Vehicle::RenderDebugArrows() const
 {
 	// if Debugging
-	g_theRenderer->BindModelMatrix(Matrix44::IDENTITY);
 	g_theRenderer->BindMaterial(*m_forwardMaterial);
 	g_theRenderer->DrawMesh(*m_forwardMesh);
 

@@ -16,20 +16,7 @@ class Game
 public:
 	bool m_inDevMode;
 
-
-public:
-	Game();
-	~Game();
-	void Startup();
-	void Update(double delta_seconds);
-	void Render() const;
-	void Shutdown();
-	bool HandleKeyPressed(unsigned char key_code);
-	bool HandleKeyReleased(unsigned char key_code);
-	void SetDeveloperMode(bool on_or_off);
-	void GarbageCollection() const;
-
-private:	
+private:
 	Camera* m_gameCamera = nullptr;
 	Shader* m_defaultShader = nullptr;
 	Vec3 m_camPosition = Vec3(0.0f, 0.0f, 0.01f);
@@ -39,12 +26,34 @@ private:
 	float m_cameraTime = 0.0f;
 	int m_currentFrame = 0;
 
-
-	std::vector<Vehicle*>         m_vehicles;
-
-	
+	std::vector<Vehicle*>			m_vehicles;
+	std::vector<BaseEntity*>		m_obstacles;
 	// box "entity"
 	GPUMesh* m_cube = nullptr;
 	Matrix44 m_cubeTransform = Matrix44::IDENTITY;
 	Material* m_woodMaterial = nullptr;
+
+
+public:
+	Game();
+	~Game();
+
+	//boiler plate
+	void Startup();
+	void Update(double delta_seconds);
+	void Render() const;
+	void Shutdown();
+
+	//input
+	bool HandleKeyPressed(unsigned char key_code);
+	bool HandleKeyReleased(unsigned char key_code);
+
+	//helper
+	void SetDeveloperMode(bool on_or_off);
+	void GarbageCollection() const;
+	void TagObstaclesWithinDisc(BaseEntity* vehicle, float range);
+
+private:
+	
+
 };

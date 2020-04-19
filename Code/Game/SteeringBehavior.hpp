@@ -13,7 +13,7 @@ private:
 	float m_scalarModifier = 1.0f;
 
 	//Pursuing
-	float m_headingTowardsTolerance = 0.97;
+	float m_headingTowardsTolerance = 0.97f;
 	float m_turnaroundCoefficient = 0.25f;
 	
 	//Targeting
@@ -25,6 +25,10 @@ private:
 	float	m_wanderDistance = 0.0f;
 	float	m_wanderJitter = 0.0f;
 	Vec2	m_wanderTarget = Vec2::ZERO;
+
+	//Obstacle Avoidance
+	float m_minLookAhead = 10.0f;
+	//float m_boxLength = 1.0f;
 	
 public:
 	
@@ -39,6 +43,7 @@ public:
 	Vec2 Pursuit(const Vehicle* evader);
 	Vec2 Evade(const Vehicle* pursuer);
 	Vec2 Wander();
+	Vec2 ObstacleAvoidance(const std::vector<BaseEntity*>& obstacles);
 
 	// Target Setting
 	void	SetTarget(const Vec2& target_pos);

@@ -1,11 +1,9 @@
 #pragma once
 #include "Game/MovingEntity.hpp"
-#include "Engine/Math/Matrix44.hpp"
 
 class Game;
 class SteeringBehavior;
-class GPUMesh;
-class Material;
+
 
 class Vehicle : public MovingEntity
 {
@@ -15,10 +13,6 @@ private:
 	Behavior			m_behavior = CONSTANT_DIR;
 
 	//debugging
-	Matrix44	m_modelMatrix = Matrix44::IDENTITY;
-	Material*	m_material = nullptr;
-	GPUMesh*	m_mesh = nullptr;
-
 	Material*	m_forwardMaterial = nullptr;
 	GPUMesh*	m_forwardMesh = nullptr;
 
@@ -30,11 +24,13 @@ public:
 		float max_force, float max_speed, float max_turn_speed_deg, float scale);
 	
 	~Vehicle();
+
+	void Init() override;
 	
 	void	Update(double delta_seconds) override;
 	void	Render() const override;
 
-	
+	//Steering behaviors
 	void	SeekTarget(const Vec2& target_pos);
 	void	FleeTarget(const Vec2& target_pos);
 	void	ArriveAt(const Vec2& target_pos, float scalar_modifier = 1.0f);
@@ -42,9 +38,12 @@ public:
 	void	EvadeFrom(const Vehicle* moving_target);
 	void	WanderAround(float radius, float distance, float jitter);
 
+	//Helppers
+	Game*	GetTheGame() const;
+
 private:
-	void InitVisuals();
-	void UpdateModelMatrix();
+	void InitVisuals() override;
+	void UpdateModelMatrix(const Vec2& new_pos);
 	
 	void InitDebugVisuals();
 	void UpdateDebugArrows(const Vec2& steering_force);

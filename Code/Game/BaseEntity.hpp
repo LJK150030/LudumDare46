@@ -1,6 +1,9 @@
 #pragma once
 #include "Game/GameCommon.hpp" 
+#include "Engine/Math/Matrix44.hpp"
 
+class GPUMesh;
+class Material;
 
 class BaseEntity
 {
@@ -10,22 +13,23 @@ public:
 		DEFAULT_ENTITY_TYPE = -1
 	};
 
-
 protected:
-	Vec2	m_position;
-	Vec2	m_scale;
 	float	m_boundingRadius;
 
+	//Render Data
+	Matrix44	m_modelMatrix = Matrix44::IDENTITY;
+	Material*	m_material = nullptr;
+	GPUMesh*	m_mesh = nullptr;
 	
 private:
 	static uint NextID;
 
+	//Meta Data
 	uint		m_id; // unique ID
 	int			m_entityType;
 	bool		m_boolTag;
 
 
-	
 public:
 	virtual ~BaseEntity();
 
@@ -35,7 +39,7 @@ public:
 	//virtual bool HandleMessage(const Telegram& msg);
 	//virtual void WriteBlackboard();
 	//virtual void ReadBlackboard();
-
+	
 	// Accessors
 	Vec2	GetPosition() const;
 	Vec2	GetScale() const;
@@ -57,10 +61,12 @@ protected:
 	BaseEntity();
 	explicit BaseEntity(int entity_type);
 	explicit BaseEntity(int entity_type, const Vec2& pos, float bounding_radius);
-	
+
+	//Initializers
+	virtual void Init();
+	virtual void InitVisuals();
 
 private:
 	// Helper 
 	uint NextValidID();
-
 };
