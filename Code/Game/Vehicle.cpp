@@ -9,51 +9,17 @@
 
 Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, const Vec2& velocity, 
 	const float mass, const float max_force, const float max_speed, const float max_turn_speed_deg,
-	const float scale):
+	const float scale, Behavior behavior):
 		MovingEntity(pos, scale, velocity, max_speed, 
 			Vec2(CosDegrees(rotation_degrees),	SinDegrees(rotation_degrees)), 
 			mass, Vec2(scale, scale), max_turn_speed_deg, max_force),
-	m_theGame(game)
+	m_theGame(game), m_behavior(behavior)
 {
 	m_steering = new SteeringBehavior(this);
-	
-
-	// Get Everything to draw the triangle
-	m_material = g_theRenderer->CreateOrGetMaterial("white", false);
-	m_material->SetShader("default_lit.hlsl");
-	m_material->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
-	TextureView* white_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFFFFFFFF")));
-	m_material->SetDiffuseMap(white_texture);
-	
-	CPUMesh triangle_mesh;
-	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), Rgba::RED);
-	m_mesh = new GPUMesh(g_theRenderer);
-	m_mesh->CreateFromCPUMesh<Vertex_Lit>(triangle_mesh);
-
-	
-	// Get Everything to draw the forward
-	m_forwardMaterial = g_theRenderer->CreateOrGetMaterial("black", false);
-	m_forwardMaterial->SetShader("default_lit.hlsl");
-	m_forwardMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
-	TextureView* black_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0x000000FF")));
-	m_forwardMaterial->SetDiffuseMap(black_texture);
-
-	CPUMesh forward_line_mesh;
-	CpuMeshAddLine(&forward_line_mesh, Vec2::ZERO, Vec2(1.0f, 0.0f), 1.0f, Rgba::BLACK);
-	m_forwardMesh = new GPUMesh(g_theRenderer);
-	m_forwardMesh->CreateFromCPUMesh<Vertex_Lit>(forward_line_mesh);
-
-	m_steeringMaterial = g_theRenderer->CreateOrGetMaterial("red", false);
-	m_steeringMaterial->SetShader("default_lit.hlsl");
-	m_steeringMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
-	TextureView* red_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFF0000FF")));
-	m_steeringMaterial->SetDiffuseMap(red_texture);
-	
-	CPUMesh steering_line_mesh;
-	CpuMeshAddLine(&steering_line_mesh, Vec2::ZERO, Vec2(1.0f, 0.0f), 1.0f, Rgba::BLACK);
-	m_steeringMesh = new GPUMesh(g_theRenderer);
-	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
+	InitVisuals();
+	InitDebugVisuals();
 }
+
 
 Vehicle::~Vehicle()
 {
@@ -77,19 +43,16 @@ Vehicle::~Vehicle()
 	m_steering = nullptr;
 }
 
-void Vehicle::Update(double delta_seconds)
+void Vehicle::Update(const double delta_seconds)
 {
-	// calculate the combined force
-	//Vec2 steering_force = m_steering->Calculate();
-
 	//debugging
-	const Vec2 steering_force = m_steering->Arrive(m_theGame->GetTarget(), 0.10f);
+	const Vec2 steering_force = m_steering->Calculate(m_behavior, m_target, 1.0f);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
 	
 	// Velocity = v_0 + a*t
-	m_velocity += acceleration * delta_seconds;
+	m_velocity += acceleration * static_cast<float>(delta_seconds);
 	m_velocity.ClampLength(m_maxSpeed);
 	m_position += m_velocity * static_cast<float>(delta_seconds);
 
@@ -107,12 +70,91 @@ void Vehicle::Update(double delta_seconds)
 		-1.0f * WORLD_HEIGHT, WORLD_HEIGHT * WORLD_ASPECT, WORLD_HEIGHT);
 
 
-	// Update model matrix
+	UpdateModelMatrix();
+	UpdateDebugArrows(steering_force);
+}
+
+
+void Vehicle::Render() const
+{
+	g_theRenderer->BindModelMatrix(m_modelMatrix);
+	g_theRenderer->BindMaterial(*m_material);
+	g_theRenderer->DrawMesh(*m_mesh);
+
+
+	// if Debugging
+	g_theRenderer->BindModelMatrix(Matrix44::IDENTITY);
+	g_theRenderer->BindMaterial(*m_forwardMaterial);
+	g_theRenderer->DrawMesh(*m_forwardMesh);
+
+	g_theRenderer->BindMaterial(*m_steeringMaterial);
+	g_theRenderer->DrawMesh(*m_steeringMesh);
+}
+
+
+void Vehicle::SetTarget(const Vec2& target_pos)
+{
+	m_target = target_pos;
+}
+
+
+void Vehicle::InitVisuals()
+{
+	// Get Everything to draw the triangle
+	m_material = g_theRenderer->CreateOrGetMaterial("white", false);
+	m_material->SetShader("default_lit.hlsl");
+	m_material->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
+	TextureView* white_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFFFFFFFF")));
+	m_material->SetDiffuseMap(white_texture);
+
+	CPUMesh triangle_mesh;
+	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), Rgba::RED);
+	m_mesh = new GPUMesh(g_theRenderer);
+	m_mesh->CreateFromCPUMesh<Vertex_Lit>(triangle_mesh);
+}
+
+
+void Vehicle::InitDebugVisuals()
+{
+	// Get Everything to forward Debug
+	m_forwardMaterial = g_theRenderer->CreateOrGetMaterial("black", false);
+	m_forwardMaterial->SetShader("default_lit.hlsl");
+	m_forwardMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
+	TextureView* black_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0x000000FF")));
+	m_forwardMaterial->SetDiffuseMap(black_texture);
+
+	CPUMesh forward_line_mesh;
+	CpuMeshAddLine(&forward_line_mesh, Vec2::ZERO, Vec2(1.0f, 0.0f), 1.0f, Rgba::BLACK);
+	m_forwardMesh = new GPUMesh(g_theRenderer);
+	m_forwardMesh->CreateFromCPUMesh<Vertex_Lit>(forward_line_mesh);
+
+
+	// Get Everything to steering Debug
+	m_steeringMaterial = g_theRenderer->CreateOrGetMaterial("red", false);
+	m_steeringMaterial->SetShader("default_lit.hlsl");
+	m_steeringMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
+	TextureView* red_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFF0000FF")));
+	m_steeringMaterial->SetDiffuseMap(red_texture);
+
+	CPUMesh steering_line_mesh;
+	CpuMeshAddLine(&steering_line_mesh, Vec2::ZERO, Vec2(1.0f, 0.0f), 1.0f, Rgba::BLACK);
+	m_steeringMesh = new GPUMesh(g_theRenderer);
+	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
+}
+
+
+void Vehicle::UpdateModelMatrix()
+{
 	m_modelMatrix.SetTvec3(Vec3(m_position.x, m_position.y, 0.0f));
 	const float cur_rot_deg = GetRotationDegrees();
 	const Matrix44 rotation_matrix = Matrix44::MakeZRotationDegrees(cur_rot_deg);
 	m_modelMatrix.SetRotationMatrix(rotation_matrix);
 
+}
+
+
+void Vehicle::UpdateDebugArrows(const Vec2& steering_force)
+{
 	//  Update Debug drawing for arrows
 	if (m_forwardMesh != nullptr)
 	{
@@ -130,25 +172,9 @@ void Vehicle::Update(double delta_seconds)
 		delete m_steeringMesh;
 		m_steeringMesh = nullptr;
 	}
-	
+
 	CPUMesh steering_line_mesh;
 	CpuMeshAddLine(&steering_line_mesh, m_position, m_position + steering_force, 1.0f, Rgba::RED);
 	m_steeringMesh = new GPUMesh(g_theRenderer);
 	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
-}
-
-void Vehicle::Render() const
-{
-	g_theRenderer->BindModelMatrix(m_modelMatrix);
-	g_theRenderer->BindMaterial(*m_material);
-	g_theRenderer->DrawMesh(*m_mesh);
-
-
-	// if Debugging
-	g_theRenderer->BindModelMatrix(Matrix44::IDENTITY);
-	g_theRenderer->BindMaterial(*m_forwardMaterial);
-	g_theRenderer->DrawMesh(*m_forwardMesh);
-
-	g_theRenderer->BindMaterial(*m_steeringMaterial);
-	g_theRenderer->DrawMesh(*m_steeringMesh);
 }

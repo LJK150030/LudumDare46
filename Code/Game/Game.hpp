@@ -29,9 +29,6 @@ public:
 	void SetDeveloperMode(bool on_or_off);
 	void GarbageCollection() const;
 
-// debug
-	Vec2 GetTarget();
-
 private:	
 	Camera* m_gameCamera = nullptr;
 	Shader* m_defaultShader = nullptr;
@@ -50,6 +47,4 @@ private:
 	GPUMesh* m_cube = nullptr;
 	Matrix44 m_cubeTransform = Matrix44::IDENTITY;
 	Material* m_woodMaterial = nullptr;
-	Vec2 m_target;
-
 };

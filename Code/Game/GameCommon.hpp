@@ -86,3 +86,15 @@ constexpr float SCREEN_SHAKE_REDUCTION = 1.0f;
 
 //One-off drawing functions
 void DrawLine(const Vec2& start, const Vec2& end, float thickness, const Rgba& tint);
+
+enum Behavior
+{
+	CONSTANT_DIR = -1,
+
+	SEEK,
+	FLEE,
+	ARRIVE,
+	PURSUIT,
+
+	NUM_BEHAVIORS
+};

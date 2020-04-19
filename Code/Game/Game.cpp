@@ -43,10 +43,29 @@ void Game::Startup()
 	//Setup Game entities
 	m_vehicles = std::vector<Vehicle*>();
 	
-	m_vehicles.push_back(new Vehicle(this, Vec2(-50.0f, -50.0f), 150.0f,
-		Vec2::ZERO, 1.0f, 4.0f, 32.0f, 1.0f, 5.0f));
-	
-	m_target = Vec2::ZERO;
+	m_vehicles.push_back(new Vehicle(
+		this, 
+		Vec2(-50.0f, -50.0f), 
+		150.0f,
+		Vec2(50.0f, 0.0f), 
+		1.0f, 
+		4.0f, 
+		50.0f, 
+		1.0f, 
+		5.0f, 
+		CONSTANT_DIR));
+
+	m_vehicles.push_back(new Vehicle(
+		this, 
+		Vec2(100.0f, 75.0f), 
+		0.0f,
+		Vec2::ZERO, 
+		1.0f, 
+		4.0f, 
+		64.0f, 
+		1.0f, 
+		5.0f, 
+		SEEK));
 }
 
 void Game::Shutdown()
@@ -71,6 +90,8 @@ void Game::Update(const double delta_seconds)
 	m_time += static_cast<float>(delta_seconds);
 	m_currentFrame++;
 
+	m_vehicles[1]->SetTarget(m_vehicles[0]->GetPosition());
+	
 	const int num_vehicles = static_cast<int>(m_vehicles.size());
 	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
 	{
@@ -128,9 +149,4 @@ void Game::SetDeveloperMode(const bool on_or_off)
 
 void Game::GarbageCollection() const
 {
-}
-
-Vec2 Game::GetTarget()
-{
-	return m_target;
 }

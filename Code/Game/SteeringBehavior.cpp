@@ -11,10 +11,35 @@ SteeringBehavior::~SteeringBehavior()
 {
 }
 
-Vec2 SteeringBehavior::Calculate()
+Vec2 SteeringBehavior::Calculate(const Behavior behavior, const Vec2& target_pos, float scalar_modifier)
 {
-	m_steeringForce = Vec2::ZERO;
-	return m_steeringForce;
+	switch(behavior)
+	{
+		case CONSTANT_DIR: 
+		{
+			return Vec2::ZERO;
+		}
+		case SEEK:
+		{
+			return Seek(target_pos);
+		}
+		case FLEE: 
+		{
+			return Flee(target_pos);
+		}
+		case ARRIVE: 
+		{
+			return Arrive(target_pos, scalar_modifier);
+		}
+		case PURSUIT:
+		{
+			return Vec2::ZERO;
+		}
+		default:
+		{
+			return Vec2::ZERO;
+		}
+	}
 }
 
 
