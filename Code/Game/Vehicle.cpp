@@ -9,11 +9,11 @@
 
 Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, const Vec2& velocity, 
 	const float mass, const float max_force, const float max_speed, const float max_turn_speed_deg,
-	const float scale, Behavior behavior):
+	const float scale):
 		MovingEntity(pos, scale, velocity, max_speed, 
 			Vec2(CosDegrees(rotation_degrees),	SinDegrees(rotation_degrees)), 
 			mass, Vec2(scale, scale), max_turn_speed_deg, max_force),
-	m_theGame(game), m_behavior(behavior)
+	m_theGame(game)
 {
 	m_steering = new SteeringBehavior(this);
 	InitVisuals();
@@ -45,7 +45,7 @@ Vehicle::~Vehicle()
 
 void Vehicle::Update(const double delta_seconds)
 {
-	const Vec2 steering_force = m_steering->Calculate(m_behavior, 1.0f);
+	const Vec2 steering_force = m_steering->Calculate(m_behavior);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
@@ -90,14 +90,32 @@ void Vehicle::Render() const
 	}
 }
 
-void Vehicle::SetTarget(const Vec2& target_pos)
+void Vehicle::SeekTarget(const Vec2& target_pos)
 {
 	m_steering->SetTarget(target_pos);
+	m_behavior = STEER_SEEK;
 }
 
-void Vehicle::PursuitOn(const Vehicle* moving_target)
+void Vehicle::FleeTarget(const Vec2& target_pos) 
+{
+	m_steering->SetTarget(target_pos);
+	m_behavior = STEER_FLEE;
+}
+
+void Vehicle::ArriveAt(const Vec2& target_pos, const float scalar_modifier)
+{
+	m_steering->SetTarget(target_pos);
+	m_steering->SetArriveModifier(scalar_modifier);
+	m_behavior = STEER_ARRIVE;
+}
+
+void Vehicle::PursuitOn(const Vehicle* moving_target, const float head_on_tolerance_frac, 
+	const float turn_around_modifier)
 {
 	m_steering->SetMovingTarget(moving_target);
+	m_steering->SetPursuitHeadTowardsTolerance(head_on_tolerance_frac);
+	m_steering->SetPursuitTurnaround(turn_around_modifier);
+
 	m_behavior = STEER_PURSUIT;
 }
 
@@ -105,6 +123,12 @@ void Vehicle::EvadeFrom(const Vehicle* moving_target)
 {
 	m_steering->SetMovingTarget(moving_target);
 	m_behavior = STEER_EVADE;
+}
+
+void Vehicle::WanderAround(const float radius, const float distance, const float jitter)
+{
+	m_steering->SetRandomWalk(radius, distance, jitter);
+	m_behavior = STEER_WANDER;
 }
 
 

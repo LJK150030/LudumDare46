@@ -27,7 +27,7 @@ private:
 
 public:
 	Vehicle(Game* game, const Vec2& pos, float rotation_degrees, const Vec2& velocity, float mass,
-		float max_force, float max_speed, float max_turn_speed_deg, float scale, Behavior behavior = STEER_SEEK);
+		float max_force, float max_speed, float max_turn_speed_deg, float scale);
 	
 	~Vehicle();
 	
@@ -35,9 +35,12 @@ public:
 	void	Render() const override;
 
 	
-	void	SetTarget(const Vec2& target_pos);
-	void	PursuitOn(const Vehicle* moving_target);
+	void	SeekTarget(const Vec2& target_pos);
+	void	FleeTarget(const Vec2& target_pos);
+	void	ArriveAt(const Vec2& target_pos, float scalar_modifier = 1.0f);
+	void	PursuitOn(const Vehicle* moving_target, float head_on_tolerance_frac = 0.97f, float turn_around_modifier = 0.25f);
 	void	EvadeFrom(const Vehicle* moving_target);
+	void	WanderAround(float radius, float distance, float jitter);
 
 private:
 	void InitVisuals();

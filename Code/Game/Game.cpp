@@ -52,8 +52,9 @@ void Game::Startup()
 		4.0f, 
 		50.0f, 
 		1.0f, 
-		5.0f, 
-		CONSTANT_DIR));
+		5.0f));
+
+	m_vehicles[0]->WanderAround(5.0f, 10.0f, 1.0f);
 
 	const int number_of_vehicles = 10;
 	for(int veh_idx = 1; veh_idx < number_of_vehicles; ++veh_idx)
@@ -77,13 +78,12 @@ void Game::Startup()
 			4.0f,
 			64.0f,
 			1.0f,
-			5.0f,
-			STEER_PURSUIT));
+			5.0f));
 
 		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
 	}
 
-	m_vehicles[0]->EvadeFrom(m_vehicles[1]);
+	
 
 }
 
