@@ -36,6 +36,7 @@ public:
 	float	GetMaxSpeed() const;
 	float	GetMaxForce() const;
 	float	GetMaxTurnSpeedDeg() const;
+	float	GetRotationDegrees() const;
 	
 	// Mutators
 	void SetVelocity(const Vec2& new_vel);

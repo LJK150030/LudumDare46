@@ -85,6 +85,11 @@ float MovingEntity::GetMaxTurnSpeedDeg() const
 	return m_maxTurnSpeedDeg;
 }
 
+float MovingEntity::GetRotationDegrees() const
+{
+	return Atan2Degrees(m_forward.y, m_forward.x);
+}
+
 
 void MovingEntity::SetVelocity(const Vec2& new_vel)
 {

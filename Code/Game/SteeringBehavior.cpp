@@ -1,13 +1,19 @@
 #include "Game/SteeringBehavior.hpp"
 #include "Game/Vehicle.hpp"
 
-SteeringBehavior::SteeringBehavior(Vehicle* agent): m_vehicle(agent)
+SteeringBehavior::SteeringBehavior(Vehicle* agent): m_vehicle(agent), m_steeringForce(Vec2::ZERO)
 {
 }
 
 
 SteeringBehavior::~SteeringBehavior()
 {
+}
+
+Vec2 SteeringBehavior::Calculate()
+{
+	m_steeringForce = Vec2::ZERO;
+	return m_steeringForce;
 }
 
 

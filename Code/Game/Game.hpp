@@ -8,6 +8,8 @@ class Camera;
 class Shader;
 class GPUMesh;
 class Material;
+class BaseEntity;
+class Vehicle;
 
 class Game
 {
@@ -27,20 +29,27 @@ public:
 	void SetDeveloperMode(bool on_or_off);
 	void GarbageCollection() const;
 
-private:
-	
-	Camera* m_gameCamera = nullptr;
+// debug
+	Vec2 GetTarget();
 
-	Material* m_woodMaterial = nullptr;
- 	Shader* m_defaultShader = nullptr;
+private:	
+	Camera* m_gameCamera = nullptr;
+	Shader* m_defaultShader = nullptr;
+	Vec3 m_camPosition = Vec3(0.0f, 0.0f, 0.01f);
+	Vec3 m_camEuler = Vec3(0.0f, 0.0f, 0.0f);
 
 	float m_time;
 	float m_cameraTime = 0.0f;
 	int m_currentFrame = 0;
 
-	Vec3 m_camPosition		= Vec3(0.0f, 0.0f, 0.01f);
-	Vec3 m_camEuler			= Vec3(0.0f, 0.0f, 0.0f); 
 
-	GPUMesh* m_cube; 
-	Matrix44 m_cubeTransform = Matrix44::IDENTITY; // cube's mode l matrix
+	std::vector<Vehicle*>         m_vehicles;
+
+	
+	// box "entity"
+	GPUMesh* m_cube = nullptr;
+	Matrix44 m_cubeTransform = Matrix44::IDENTITY;
+	Material* m_woodMaterial = nullptr;
+	Vec2 m_target;
+
 };

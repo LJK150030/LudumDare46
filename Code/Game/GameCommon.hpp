@@ -11,11 +11,14 @@ class App;
 class RenderContext;
 class InputSystem;
 class AudioSystem;
+class BaseEntity;
 
 extern App* g_theApp;
 extern AudioSystem* g_theAudio;
 
 typedef unsigned int uint;
+typedef std::vector<BaseEntity*>::iterator  EntityIt;
+
 
 //Window config
 constexpr float WORLD_ASPECT = 1.7777777777777778f;
