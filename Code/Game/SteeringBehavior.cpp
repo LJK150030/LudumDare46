@@ -15,49 +15,77 @@ SteeringBehavior::~SteeringBehavior()
 }
 
 
-Vec2 SteeringBehavior::Calculate(const Behavior behavior)
+Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavior)
 {
-	switch(behavior)
+	Vec2 resulting_vector = Vec2::ZERO;
+	float num_vectors = 0.0f;
+	
+	for(int beh_idx = 0; beh_idx < NUM_STEER_BEHAVIORS; ++beh_idx)
 	{
-		case CONSTANT_DIR: 
+		if(!behavior.test(beh_idx))
 		{
-			return Vec2::ZERO;
+			continue;
 		}
-		case STEER_SEEK:
+
+		switch(beh_idx)
 		{
-			return Seek(m_target);
-		}
-		case STEER_FLEE:
-		{
-			return Flee(m_target);
-		}
-		case STEER_ARRIVE:
-		{
-			return Arrive(m_target);
-		}
-		case STEER_PURSUIT:
-		{
-			if(m_movingTarget != nullptr)
+			case CONSTANT_DIR:
 			{
-				return Pursuit(m_movingTarget);
+				return Vec2::ZERO;
+				break;
 			}
-		}
-		case STEER_EVADE:
-		{
-			if (m_movingTarget != nullptr)
+			case STEER_SEEK:
 			{
-				return Evade(m_movingTarget);
+				resulting_vector += Seek(m_target);
+				num_vectors += 1.0f;
+				break;
 			}
-		}
-		case STEER_WANDER:
-		{
-			return Wander();
-		}
-		default:
-		{
-			return Vec2::ZERO;
+			case STEER_FLEE:
+			{
+				resulting_vector += Flee(m_target);
+				num_vectors += 1.0f;
+				break;
+			}
+			case STEER_ARRIVE:
+			{
+				resulting_vector += Arrive(m_target);
+				num_vectors += 1.0f;
+				break;
+			}
+			case STEER_PURSUIT:
+			{
+				resulting_vector += Pursuit(m_movingTarget);
+				num_vectors += 1.0f;
+				break;
+			}
+			case STEER_EVADE:
+			{
+				resulting_vector += Evade(m_movingTarget);
+				num_vectors += 1.0f;
+				break;
+			}
+			case STEER_WANDER:
+			{
+				resulting_vector += Wander();
+				num_vectors += 1.0f;
+				break;
+			}
+			case STEER_OBSTACLE_AVOIDANCE:
+			{
+				Vec2 result = Vec2::ZERO;
+				const bool avoid = ObstacleAvoidance(result);
+
+				if(avoid)
+				{
+					return result;
+				}
+			}
+		
 		}
 	}
+
+	resulting_vector /= num_vectors;
+	return resulting_vector;
 }
 
 
@@ -158,7 +186,7 @@ Vec2 SteeringBehavior::Wander()
 }
 
 
-Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacles)
+bool SteeringBehavior::ObstacleAvoidance(Vec2& out_vec)
 {
 	const float frac_of_speed = m_vehicle->GetSpeed() / m_vehicle->GetMaxSpeed();
 	const float detection_box_length = m_minLookAhead + m_minLookAhead * frac_of_speed;
@@ -166,6 +194,7 @@ Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacl
 	// Loop through all of the obstacles and tag those that are within the objects bounding radius
 	Game* the_game = m_vehicle->GetTheGame();
 	the_game->TagObstaclesWithinDisc(m_vehicle, detection_box_length);
+	const std::vector<BaseEntity*>& obstacles = the_game->GetObstacles();
 
 	BaseEntity* closest_intersecting_obstacle = nullptr;
 	float distance_to_closest_intersecting_point = INFINITY;
@@ -187,7 +216,7 @@ Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacl
 
 				if(Abs(local_pos.y) < expanded_radius)
 				{
-					Ray2 vehicle_ray(m_vehicle->GetPosition(), m_vehicle->GetForward());
+					Ray2 vehicle_ray(Vec2::ZERO, Vec2(1.0f, 0.0f));
 					float out_t[2] = { INFINITY, INFINITY };
 					const uint impact = Raycast(out_t, vehicle_ray, local_pos, expanded_radius);
 
@@ -199,7 +228,7 @@ Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacl
 						}
 						case 1: // only entering
 						{
-							if(out_t[0] > 0.0f && out_t[0] < distance_to_closest_intersecting_point)
+							if(out_t[0] < distance_to_closest_intersecting_point)
 							{
 								distance_to_closest_intersecting_point = out_t[0];
 								closest_intersecting_obstacle = obstacles[ob_idx];
@@ -209,17 +238,24 @@ Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacl
 						}
 						case 2: // and entrance and exit
 						{
-							if (out_t[0] < distance_to_closest_intersecting_point)
+							if (out_t[1] > 0.0f && out_t[1] < out_t[0])
 							{
-								distance_to_closest_intersecting_point = out_t[0];
-								closest_intersecting_obstacle = obstacles[ob_idx];
-								local_position_of_closest_obstacle = local_pos;
+								if(out_t[1] < distance_to_closest_intersecting_point)
+								{
+									distance_to_closest_intersecting_point = out_t[1];
+									closest_intersecting_obstacle = obstacles[ob_idx];
+									local_position_of_closest_obstacle = local_pos;
+								}
 							}
-							else if(out_t[1] < distance_to_closest_intersecting_point)
+							else
 							{
-								distance_to_closest_intersecting_point = out_t[1];
-								closest_intersecting_obstacle = obstacles[ob_idx];
-								local_position_of_closest_obstacle = local_pos;
+								if (out_t[0] < distance_to_closest_intersecting_point)
+								{
+									distance_to_closest_intersecting_point = out_t[0];
+									closest_intersecting_obstacle = obstacles[ob_idx];
+									local_position_of_closest_obstacle = local_pos;
+								}
+
 							}
 							break;
 						}
@@ -228,8 +264,28 @@ Vec2 SteeringBehavior::ObstacleAvoidance(const std::vector<BaseEntity*>& obstacl
 			}
 		}
 	}
+	
+	if(closest_intersecting_obstacle)
+	{
+		// the closer I am, the harder I need to turn
+		const float multiplier = m_avoidanceMultiplier + (detection_box_length - local_position_of_closest_obstacle.x) /
+			detection_box_length;
 
-	return Vec2::ZERO;
+		//lateral force
+		Vec2 steering_force;
+		steering_force.y = (closest_intersecting_obstacle->GetBoundingRadius() -
+			local_position_of_closest_obstacle.y) * multiplier;
+
+		float breaking_weight = m_breakingWeight;
+		steering_force.x = (closest_intersecting_obstacle->GetBoundingRadius() -
+			local_position_of_closest_obstacle.x) * breaking_weight;
+		
+		out_vec = VectorToWorldSpace(steering_force, m_vehicle->GetForward(), m_vehicle->GetTangent());
+		
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -277,4 +333,13 @@ void SteeringBehavior::SetRandomWalk(const float radius, const float distance, c
 	m_wanderRadius = radius;
 	m_wanderDistance = distance;
 	m_wanderJitter = jitter;
+}
+
+
+void SteeringBehavior::SetObstaclesAvoidance(const float min_look_ahead, const float avoidance_mul, 
+	const float breaking_weight)
+{
+	m_minLookAhead = min_look_ahead;
+	m_avoidanceMultiplier = avoidance_mul;
+	m_breakingWeight = breaking_weight;
 }

@@ -47,7 +47,7 @@ void Vehicle::Init()
 
 void Vehicle::Update(const double delta_seconds)
 {
-	const Vec2 steering_force = m_steering->Calculate(m_behavior);
+	const Vec2 steering_force = m_steering->Calculate(m_behaviors);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
@@ -96,20 +96,20 @@ void Vehicle::Render() const
 void Vehicle::SeekTarget(const Vec2& target_pos)
 {
 	m_steering->SetTarget(target_pos);
-	m_behavior = STEER_SEEK;
+	m_behaviors[STEER_SEEK] = true;
 }
 
 void Vehicle::FleeTarget(const Vec2& target_pos) 
 {
 	m_steering->SetTarget(target_pos);
-	m_behavior = STEER_FLEE;
+	m_behaviors[STEER_FLEE] = true;
 }
 
 void Vehicle::ArriveAt(const Vec2& target_pos, const float scalar_modifier)
 {
 	m_steering->SetTarget(target_pos);
 	m_steering->SetArriveModifier(scalar_modifier);
-	m_behavior = STEER_ARRIVE;
+	m_behaviors[STEER_ARRIVE] = true;
 }
 
 void Vehicle::PursuitOn(const Vehicle* moving_target, const float head_on_tolerance_frac, 
@@ -118,20 +118,26 @@ void Vehicle::PursuitOn(const Vehicle* moving_target, const float head_on_tolera
 	m_steering->SetMovingTarget(moving_target);
 	m_steering->SetPursuitHeadTowardsTolerance(head_on_tolerance_frac);
 	m_steering->SetPursuitTurnaround(turn_around_modifier);
-
-	m_behavior = STEER_PURSUIT;
+	m_behaviors[STEER_PURSUIT] = true;
 }
 
 void Vehicle::EvadeFrom(const Vehicle* moving_target)
 {
 	m_steering->SetMovingTarget(moving_target);
-	m_behavior = STEER_EVADE;
+	m_behaviors[STEER_EVADE] = true;
 }
 
 void Vehicle::WanderAround(const float radius, const float distance, const float jitter)
 {
 	m_steering->SetRandomWalk(radius, distance, jitter);
-	m_behavior = STEER_WANDER;
+	m_behaviors[STEER_WANDER] = true;
+}
+
+void Vehicle::AvoidObstacles(const float min_look_ahead, const float avoidance_mul,
+	const float breaking_weight)
+{
+	m_steering->SetObstaclesAvoidance(min_look_ahead, avoidance_mul, breaking_weight);
+	m_behaviors[STEER_OBSTACLE_AVOIDANCE] = true;
 }
 
 

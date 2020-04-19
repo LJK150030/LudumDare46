@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/MovingEntity.hpp"
+#include <bitset>
 
 class Game;
 class SteeringBehavior;
@@ -10,8 +11,10 @@ class Vehicle : public MovingEntity
 private:	
 	Game*				m_theGame = nullptr;
 	SteeringBehavior*	m_steering = nullptr;
-	Behavior			m_behavior = CONSTANT_DIR;
-
+	
+	//bit field
+	std::bitset<NUM_STEER_BEHAVIORS> m_behaviors;
+	
 	//debugging
 	Material*	m_forwardMaterial = nullptr;
 	GPUMesh*	m_forwardMesh = nullptr;
@@ -37,6 +40,7 @@ public:
 	void	PursuitOn(const Vehicle* moving_target, float head_on_tolerance_frac = 0.97f, float turn_around_modifier = 0.25f);
 	void	EvadeFrom(const Vehicle* moving_target);
 	void	WanderAround(float radius, float distance, float jitter);
+	void	AvoidObstacles(float min_look_ahead, float avoidance_mul, float breaking_weight);
 
 	//Helppers
 	Game*	GetTheGame() const;

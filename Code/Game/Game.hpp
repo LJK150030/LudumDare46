@@ -56,7 +56,8 @@ public:
 	void SetDeveloperMode(bool on_or_off);
 	void GarbageCollection() const;
 	void TagObstaclesWithinDisc(BaseEntity* vehicle, float range);
-
+	const std::vector<BaseEntity*>& GetObstacles() const;
+	
 private:
 	
 

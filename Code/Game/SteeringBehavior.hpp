@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/GameCommon.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include <bitset>
 
 class Vehicle;
 
@@ -28,14 +29,15 @@ private:
 
 	//Obstacle Avoidance
 	float m_minLookAhead = 10.0f;
-	//float m_boxLength = 1.0f;
+	float m_avoidanceMultiplier = 1.0f;
+	float m_breakingWeight = 0.2f;
 	
 public:
 	
 	explicit SteeringBehavior(Vehicle* agent);
 	~SteeringBehavior();
 
-	Vec2 Calculate(Behavior behavior);
+	Vec2 Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavior);
 	
 	Vec2 Seek(const Vec2& target_pos);
 	Vec2 Flee(const Vec2& target_pos);
@@ -43,7 +45,7 @@ public:
 	Vec2 Pursuit(const Vehicle* evader);
 	Vec2 Evade(const Vehicle* pursuer);
 	Vec2 Wander();
-	Vec2 ObstacleAvoidance(const std::vector<BaseEntity*>& obstacles);
+	bool ObstacleAvoidance(Vec2& out_vec);
 
 	// Target Setting
 	void	SetTarget(const Vec2& target_pos);
@@ -58,6 +60,9 @@ public:
 
 	// Random Walk Setting
 	void	SetRandomWalk(float radius, float distance, float jitter);
+
+	// ObstacleAvoidance
+	void	SetObstaclesAvoidance(float min_look_ahead, float avoidance_mul, float breaking_weight);
 	
 private:
 	float TurnaroundTime(const Vehicle* agent, const Vec2& target_pos, float coefficient) const;

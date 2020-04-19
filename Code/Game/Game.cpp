@@ -46,23 +46,24 @@ void Game::Startup()
 	m_obstacles.push_back(new BaseEntity(
 		DEFAULT_ENTITY_TYPE,
 		Vec2::ZERO,
-		10.0f)
+		50.0f)
 	);
 	m_obstacles[0]->Init();
 	
 	m_vehicles = std::vector<Vehicle*>();
 	m_vehicles.push_back(new Vehicle(
 		this, 
-		Vec2(-50.0f, -50.0f), 
+		Vec2(-100.0f, 0.0f), 
 		150.0f,
-		Vec2(30.0f, 40.0f), 
+		Vec2(25.0f,0.0f), 
 		1.0f, 
 		4.0f, 
 		50.0f, 
 		1.0f, 
 		5.0f));
 
-	m_vehicles[0]->WanderAround(5.0f, 10.0f, 1.0f);
+	m_vehicles[0]->WanderAround(20.0f, 5.0f, 3.6f);
+	m_vehicles[0]->AvoidObstacles(30.0f, 2.0f, 1.0f);
 	m_vehicles[0]->Init();
 	
 	const int number_of_vehicles = 10;
@@ -78,6 +79,21 @@ void Game::Startup()
 			WORLD_HEIGHT
 		);
 
+// 		const float radius = g_randomNumberGenerator.GetRandomFloatInRange(
+// 			5.0f,
+// 			20.0f
+// 		);
+// 
+// 		const float distance = g_randomNumberGenerator.GetRandomFloatInRange(
+// 			5.0f,
+// 			20.0f
+// 		);
+// 
+// 		const float jitter = g_randomNumberGenerator.GetRandomFloatInRange(
+// 			5.0f,
+// 			20.0f
+// 		);
+
 		m_vehicles.push_back(new Vehicle(
 			this,
 			Vec2(x, y),
@@ -89,8 +105,9 @@ void Game::Startup()
 			1.0f,
 			5.0f));
 
-		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
 		m_vehicles[veh_idx]->Init();
+		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
+		//m_vehicles[veh_idx]->WanderAround(radius, distance, jitter);
 	}
 
 	
@@ -157,16 +174,16 @@ void Game::Render() const
 	g_theRenderer->BindMaterial(*m_woodMaterial);
 	g_theRenderer->DrawMesh(*m_cube);
 
-	const int num_vehicles = static_cast<int>(m_vehicles.size());
-	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
-	{
-		m_vehicles[vehicles_idx]->Render();
-	}
-
 	const int num_obstacles = static_cast<int>(m_obstacles.size());
 	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
 	{
 		m_obstacles[obstacle_idx]->Render();
+	}
+	
+	const int num_vehicles = static_cast<int>(m_vehicles.size());
+	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
+	{
+		m_vehicles[vehicles_idx]->Render();
 	}
  
 	g_theRenderer->EndCamera(m_gameCamera);
@@ -201,4 +218,9 @@ void Game::GarbageCollection() const
 void Game::TagObstaclesWithinDisc(BaseEntity* vehicle, const float range)
 {
 	TagClosestNeighbors(vehicle, m_obstacles, range);
+}
+
+const std::vector<BaseEntity*>& Game::GetObstacles() const
+{
+	return m_obstacles;
 }
