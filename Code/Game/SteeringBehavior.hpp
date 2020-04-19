@@ -14,6 +14,8 @@ public:
 	Vec2 Seek(const Vec2& target_pos);
 	Vec2 Flee(const Vec2& target_pos);
 
+	Vec2 Arrive(const Vec2& target_pos, float scalar_modifier = 1.0f);
+
 private:
 	Vehicle*    m_vehicle = nullptr;
 	

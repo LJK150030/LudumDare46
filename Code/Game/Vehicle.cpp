@@ -83,7 +83,7 @@ void Vehicle::Update(double delta_seconds)
 	//Vec2 steering_force = m_steering->Calculate();
 
 	//debugging
-	const Vec2 steering_force = m_steering->Flee(m_theGame->GetTarget());
+	const Vec2 steering_force = m_steering->Arrive(m_theGame->GetTarget(), 0.10f);
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
