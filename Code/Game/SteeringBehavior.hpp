@@ -12,6 +12,7 @@ public:
 	Vec2 Calculate();
 	
 	Vec2 Seek(const Vec2& target_pos);
+	Vec2 Flee(const Vec2& target_pos);
 
 private:
 	Vehicle*    m_vehicle = nullptr;

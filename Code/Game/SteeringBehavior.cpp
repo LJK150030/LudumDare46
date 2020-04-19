@@ -28,3 +28,16 @@ Vec2 SteeringBehavior::Seek(const Vec2& target_pos)
 	
 	return seek_force;
 }
+
+
+Vec2 SteeringBehavior::Flee(const Vec2& target_pos)
+{
+	Vec2 direction = m_vehicle->GetPosition() - target_pos;
+	direction.Normalize();
+
+	const Vec2 desired_velocity = direction * m_vehicle->GetMaxSpeed();
+
+	const Vec2 seek_force = desired_velocity - m_vehicle->GetVelocity();
+
+	return seek_force;
+}

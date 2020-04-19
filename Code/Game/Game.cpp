@@ -43,8 +43,8 @@ void Game::Startup()
 	//Setup Game entities
 	m_vehicles = std::vector<Vehicle*>();
 	
-	m_vehicles.push_back(new Vehicle(this, Vec2(-50.0f, -50.0f), 150.0f, Vec2::ZERO, 1.0f,
-		1.0f, 10.0f, 1.0f, 5.0f));
+	m_vehicles.push_back(new Vehicle(this, Vec2(-50.0f, -50.0f), 150.0f,
+		Vec2::ZERO, 1.0f, 4.0f, 32.0f, 1.0f, 5.0f));
 	
 	m_target = Vec2::ZERO;
 }
