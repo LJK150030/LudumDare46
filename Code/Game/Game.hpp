@@ -34,11 +34,6 @@ private:
 	float m_time;
 	float m_cameraTime = 0.0f;
 	int m_currentFrame = 0;
-	
-	// box "entity"
-	GPUMesh* m_cube = nullptr;
-	Matrix44 m_cubeTransform = Matrix44::IDENTITY;
-	Material* m_woodMaterial = nullptr;
 
 
 public:

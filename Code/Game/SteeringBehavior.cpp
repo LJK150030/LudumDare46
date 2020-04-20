@@ -19,7 +19,7 @@ SteeringBehavior::~SteeringBehavior()
 Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavior)
 {
 	Vec2 resulting_vector = Vec2::ZERO;
-	//float num_vectors = 0.0f;
+	float num_vectors = 0.0f;
 	
 	for(int beh_idx = 0; beh_idx < NUM_STEER_BEHAVIORS; ++beh_idx)
 	{
@@ -37,38 +37,38 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 			}
 			case STEER_SEEK:
 			{
-				resulting_vector = Seek(m_target);
-				//num_vectors += 1.0f;
+				resulting_vector += Seek(m_target);
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_FLEE:
 			{
-				resulting_vector = Flee(m_target);
-				//num_vectors += 1.0f;
+				resulting_vector += Flee(m_target);
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_ARRIVE:
 			{
-				resulting_vector = Arrive(m_target);
-				//num_vectors += 1.0f;
+				resulting_vector += Arrive(m_target);
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_PURSUIT:
 			{
-				resulting_vector = Pursuit(m_movingTarget);
-				//num_vectors += 1.0f;
+				resulting_vector += Pursuit(m_movingTarget);
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_EVADE:
 			{
-				resulting_vector = Evade(m_movingTarget);
-				//num_vectors += 1.0f;
+				resulting_vector += Evade(m_movingTarget);
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_WANDER:
 			{
-				resulting_vector = Wander();
-				//num_vectors += 1.0f;
+				resulting_vector += Wander();
+				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_OBSTACLE_AVOIDANCE:
@@ -98,7 +98,7 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 		}
 	}
 
-	//resulting_vector /= num_vectors;
+	resulting_vector /= num_vectors;
 	return resulting_vector;
 }
 

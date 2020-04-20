@@ -16,6 +16,7 @@ private:
 	std::bitset<NUM_STEER_BEHAVIORS> m_behaviors;
 	
 	//debugging
+	Rgba m_color = Rgba::WHITE;
 	Material*	m_forwardMaterial = nullptr;
 	GPUMesh*	m_forwardMesh = nullptr;
 
@@ -24,7 +25,7 @@ private:
 
 public:
 	Vehicle(Game* game, const Vec2& pos, float rotation_degrees, const Vec2& velocity, float mass,
-		float max_force, float max_speed, float max_turn_speed_deg, float scale);
+		float max_force, float max_speed, float max_turn_speed_deg, float scale, Rgba color = Rgba::WHITE);
 	
 	~Vehicle();
 

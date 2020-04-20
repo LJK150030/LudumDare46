@@ -7,13 +7,13 @@
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Shader.hpp"
 
-Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, const Vec2& velocity, 
+Vehicle::Vehicle(Game* game, const Vec2& pos, const float rotation_degrees, const Vec2& velocity,
 	const float mass, const float max_force, const float max_speed, const float max_turn_speed_deg,
-	const float scale):
-		MovingEntity(pos, scale, velocity, max_speed, 
-			Vec2(CosDegrees(rotation_degrees),	SinDegrees(rotation_degrees)), 
-			mass, Vec2(scale, scale), max_turn_speed_deg, max_force),
-	m_theGame(game)
+	const float scale, const Rgba color) :
+	MovingEntity(pos, scale, velocity, max_speed,
+		Vec2(CosDegrees(rotation_degrees), SinDegrees(rotation_degrees)),
+		mass, Vec2(scale, scale), max_turn_speed_deg, max_force),
+	m_theGame(game), m_color(color)
 {
 	m_steering = new SteeringBehavior(this);
 	SetEntityType(ENTITY_VEHICLE);
@@ -166,13 +166,13 @@ void Vehicle::InitVisuals()
 {
 	// Get Everything to draw the triangle
 	m_material = g_theRenderer->CreateOrGetMaterial("white", false);
-	m_material->SetShader("default_lit.hlsl");
+	m_material->SetShader("default_unlit.hlsl");
 	m_material->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
 	TextureView* white_texture(reinterpret_cast<TextureView*>(g_theRenderer->CreateOrGetTextureView2D("0xFFFFFFFF")));
 	m_material->SetDiffuseMap(white_texture);
 
 	CPUMesh triangle_mesh;
-	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), Rgba::WHITE);
+	CpuMeshAddTriangle(&triangle_mesh, GetBoundingRadius(), m_color);
 	m_mesh = new GPUMesh(g_theRenderer);
 	m_mesh->CreateFromCPUMesh<Vertex_Lit>(triangle_mesh);
 }

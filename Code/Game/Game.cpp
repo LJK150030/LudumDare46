@@ -33,21 +33,12 @@ void Game::Startup()
 	m_gameCamera->SetOrthoView(Vec2(-WORLD_HEIGHT * WORLD_ASPECT, -WORLD_HEIGHT), Vec2(WORLD_HEIGHT * WORLD_ASPECT, WORLD_HEIGHT));
 	m_defaultShader = g_theRenderer->CreateOrGetShader("default_unlit.hlsl");
 
-	//Setup proto entities
-	CPUMesh cube_mesh;
-	CpuMeshAddQuad(&cube_mesh, AABB2(Vec2(-10.0f, -10.0f), Vec2(10.0f, 10.0f)));
-	m_cube = new GPUMesh(g_theRenderer);
-	m_cube->CreateFromCPUMesh<Vertex_Lit>(cube_mesh); // we won't be updated this;
-	m_woodMaterial = g_theRenderer->CreateOrGetMaterial("wood.mat");
-	m_woodMaterial->SetShader("default_lit.hlsl");
-	m_woodMaterial->m_shader->SetDepth(COMPARE_LESS_EQUAL, true);
-
 	//Setup Game entities
 	m_obstacles = std::vector<BaseEntity*>();
 	m_obstacles.push_back(new BaseEntity(
 		DEFAULT_ENTITY_TYPE,
 		Vec2::ZERO,
-		50.0f)
+		32.0f)
 	);
 	m_obstacles[0]->Init();
 
@@ -104,12 +95,12 @@ void Game::Startup()
 		1.0f, 
 		5.0f));
 
-	m_vehicles[0]->WanderAround(5.0f, 5.0f, 1.6f);
-	m_vehicles[0]->AvoidObstacles(30.0f, 2.0f, 0.25f);
-	m_vehicles[0]->AvoidWalls(3, 30.0f, 2.0f, 45.0f);
+	m_vehicles[0]->WanderAround(7.0f, 20.0f, 1.32f);
+	m_vehicles[0]->AvoidObstacles(30.0f, 3.0f, 0.25f);
+	m_vehicles[0]->AvoidWalls(3, 30.0f, 3.0f, 45.0f);
 	m_vehicles[0]->Init();
 	
-	const int number_of_vehicles = 10;
+	const int number_of_vehicles = 600;
 	for(int veh_idx = 1; veh_idx < number_of_vehicles; ++veh_idx)
 	{
 		const float x = g_randomNumberGenerator.GetRandomFloatInRange(
@@ -122,20 +113,20 @@ void Game::Startup()
 			WORLD_HEIGHT
 		);
 
-// 		const float radius = g_randomNumberGenerator.GetRandomFloatInRange(
-// 			5.0f,
-// 			20.0f
-// 		);
-// 
-// 		const float distance = g_randomNumberGenerator.GetRandomFloatInRange(
-// 			5.0f,
-// 			20.0f
-// 		);
-// 
-// 		const float jitter = g_randomNumberGenerator.GetRandomFloatInRange(
-// 			5.0f,
-// 			20.0f
-// 		);
+		const float radius = g_randomNumberGenerator.GetRandomFloatInRange(
+			1.0f,
+			100.0f
+		);
+
+		const float distance = g_randomNumberGenerator.GetRandomFloatInRange(
+			70.0f,
+			100.0f
+		);
+
+		const float jitter = g_randomNumberGenerator.GetRandomFloatInRange(
+			1.0f,
+			50.0f
+		);
 
 		m_vehicles.push_back(new Vehicle(
 			this,
@@ -144,13 +135,14 @@ void Game::Startup()
 			Vec2::ZERO,
 			1.0f,
 			4.0f,
-			100.0f,
+			75.0f,
 			1.0f,
-			5.0f));
+			5.0f,
+			Rgba::GRAY));
 
 		m_vehicles[veh_idx]->Init();
 		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
-		//m_vehicles[veh_idx]->WanderAround(radius, distance, jitter);
+		m_vehicles[veh_idx]->WanderAround(radius, distance, jitter);
 	}
 
 	
@@ -182,9 +174,6 @@ void Game::Shutdown()
 		m_obstacles[obstacle_idx] = nullptr;
 	}
 
-	delete m_cube;
-	m_cube = nullptr;
-	
 	delete m_gameCamera;
 	m_gameCamera = nullptr;
 }
@@ -215,10 +204,6 @@ void Game::Render() const
 	g_theRenderer->BeginCamera(m_gameCamera);
 	g_theRenderer->ClearScreen(Rgba::CYAN);
 	g_theRenderer->ClearDepthStencilTarget(1.0f);
-
- 	g_theRenderer->BindModelMatrix(m_cubeTransform);
-	g_theRenderer->BindMaterial(*m_woodMaterial);
-	g_theRenderer->DrawMesh(*m_cube);
 
 	const int num_obstacles = static_cast<int>(m_obstacles.size());
 	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
