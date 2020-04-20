@@ -94,9 +94,24 @@ void Vehicle::Render() const
 }
 
 
+void Vehicle::TurnOffSteering()
+{
+	m_behaviors.reset();
+	m_steering->SetMovingTarget(nullptr);
+	m_steering->SetTarget(Vec2::ZERO);
+}
+
+
 void Vehicle::SeekTarget(const Vec2& target_pos)
 {
 	m_steering->SetTarget(target_pos);
+	m_behaviors[STEER_SEEK] = true;
+}
+
+
+void Vehicle::SeekTarget(const Vehicle* moving_target)
+{
+	m_steering->SetMovingTarget(moving_target);
 	m_behaviors[STEER_SEEK] = true;
 }
 

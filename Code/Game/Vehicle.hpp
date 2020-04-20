@@ -35,7 +35,9 @@ public:
 	void	Render() const override;
 
 	//Steering behaviors
+	void	TurnOffSteering();
 	void	SeekTarget(const Vec2& target_pos);
+	void	SeekTarget(const Vehicle* moving_target);
 	void	FleeTarget(const Vec2& target_pos);
 	void	ArriveAt(const Vec2& target_pos, float scalar_modifier = 1.0f);
 	void	PursuitOn(const Vehicle* moving_target, float head_on_tolerance_frac = 0.97f, float turn_around_modifier = 0.25f);

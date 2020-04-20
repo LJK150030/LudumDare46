@@ -20,6 +20,11 @@ public:
 
 private:
 	//Game objects
+	uint num_enemies = 4;
+	const uint MIN_NUM_ENEMIES = 1;
+	const uint MAX_NUM_ENEMIES = 16'383;
+	uint vehicle_head_idx = 0;
+	
 	std::vector<Vehicle*>		m_vehicles;
 	std::vector<BaseEntity*>	m_obstacles;
 	std::vector<WallEntity*>	m_worldBounds;

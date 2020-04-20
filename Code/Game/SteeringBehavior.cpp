@@ -20,6 +20,11 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 {
 	Vec2 resulting_vector = Vec2::ZERO;
 	float num_vectors = 0.0f;
+
+	if(behavior.none())
+	{
+		return Vec2::ZERO;
+	}
 	
 	for(int beh_idx = 0; beh_idx < NUM_STEER_BEHAVIORS; ++beh_idx)
 	{
@@ -37,19 +42,42 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 			}
 			case STEER_SEEK:
 			{
-				resulting_vector += Seek(m_target);
+				if(m_movingTarget != nullptr)
+				{
+					resulting_vector += Seek(m_movingTarget->GetPosition());
+				}
+				else
+				{
+					resulting_vector += Seek(m_target);
+				}
 				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_FLEE:
 			{
-				resulting_vector += Flee(m_target);
+				if (m_movingTarget != nullptr)
+				{
+					resulting_vector += Flee(m_movingTarget->GetPosition());
+				}
+				else
+				{
+					resulting_vector += Flee(m_target);
+				}
+					
 				num_vectors += 1.0f;
 				break;
 			}
 			case STEER_ARRIVE:
 			{
-				resulting_vector += Arrive(m_target);
+				if (m_movingTarget != nullptr)
+				{
+					resulting_vector += Arrive(m_movingTarget->GetPosition());
+				}
+				else
+				{
+					resulting_vector += Arrive(m_target);
+				}
+					
 				num_vectors += 1.0f;
 				break;
 			}

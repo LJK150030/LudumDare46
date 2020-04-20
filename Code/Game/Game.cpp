@@ -84,6 +84,7 @@ void Game::Startup()
 	
 	
 	m_vehicles = std::vector<Vehicle*>();
+	m_vehicles.reserve(MAX_NUM_ENEMIES);
 	m_vehicles.push_back(new Vehicle(
 		this, 
 		Vec2(-100.0f, 0.0f), 
@@ -94,14 +95,14 @@ void Game::Startup()
 		50.0f, 
 		1.0f, 
 		5.0f));
+	++vehicle_head_idx;
 
 	m_vehicles[0]->WanderAround(7.0f, 20.0f, 1.32f);
 	m_vehicles[0]->AvoidObstacles(30.0f, 3.0f, 0.25f);
 	m_vehicles[0]->AvoidWalls(3, 30.0f, 3.0f, 45.0f);
 	m_vehicles[0]->Init();
 	
-	const int number_of_vehicles = 600;
-	for(int veh_idx = 1; veh_idx < number_of_vehicles; ++veh_idx)
+	for(uint veh_idx = 1; veh_idx < MAX_NUM_ENEMIES; ++veh_idx)
 	{
 		const float x = g_randomNumberGenerator.GetRandomFloatInRange(
 			-WORLD_HEIGHT * WORLD_ASPECT,
@@ -111,21 +112,6 @@ void Game::Startup()
 		const float y = g_randomNumberGenerator.GetRandomFloatInRange(
 			-WORLD_HEIGHT,
 			WORLD_HEIGHT
-		);
-
-		const float radius = g_randomNumberGenerator.GetRandomFloatInRange(
-			1.0f,
-			100.0f
-		);
-
-		const float distance = g_randomNumberGenerator.GetRandomFloatInRange(
-			70.0f,
-			100.0f
-		);
-
-		const float jitter = g_randomNumberGenerator.GetRandomFloatInRange(
-			1.0f,
-			50.0f
 		);
 
 		m_vehicles.push_back(new Vehicle(
@@ -141,8 +127,8 @@ void Game::Startup()
 			Rgba::GRAY));
 
 		m_vehicles[veh_idx]->Init();
-		m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
-		m_vehicles[veh_idx]->WanderAround(radius, distance, jitter);
+		m_vehicles[veh_idx]->TurnOffSteering();
+		++vehicle_head_idx;
 	}
 
 	
@@ -151,24 +137,24 @@ void Game::Startup()
 
 void Game::Shutdown()
 {
-	const int num_vehicles = static_cast<int>(m_vehicles.size());
-	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
+	const uint num_vehicles = static_cast<uint>(m_vehicles.size());
+	for (uint vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
 	{
 		delete m_vehicles[vehicles_idx];
 		m_vehicles[vehicles_idx] = nullptr;
 	}
 
 
-	const int num_walls = static_cast<int>(m_worldBounds.size());
-	for (int wall_idx = 0; wall_idx < num_walls; ++wall_idx)
+	const uint num_walls = static_cast<uint>(m_worldBounds.size());
+	for (uint wall_idx = 0; wall_idx < num_walls; ++wall_idx)
 	{
 		delete m_worldBounds[wall_idx];
 		m_worldBounds[wall_idx] = nullptr;
 	}
 
 	
-	const int num_obstacles = static_cast<int>(m_obstacles.size());
-	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
+	const uint num_obstacles = static_cast<uint>(m_obstacles.size());
+	for (uint obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
 	{
 		delete m_obstacles[obstacle_idx];
 		m_obstacles[obstacle_idx] = nullptr;
@@ -184,8 +170,7 @@ void Game::Update(const double delta_seconds)
 	m_time += static_cast<float>(delta_seconds);
 	m_currentFrame++;
 
-	const int num_vehicles = static_cast<int>(m_vehicles.size());
-	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
+	for (uint vehicles_idx = 0; vehicles_idx < num_enemies; ++vehicles_idx)
 	{
 		m_vehicles[vehicles_idx]->Update(delta_seconds);
 	}
@@ -217,8 +202,7 @@ void Game::Render() const
 		m_worldBounds[wall_idx]->Render();
 	}
 	
-	const int num_vehicles = static_cast<int>(m_vehicles.size());
-	for (int vehicles_idx = 0; vehicles_idx < num_vehicles; ++vehicles_idx)
+	for (uint vehicles_idx = 0; vehicles_idx < num_enemies; ++vehicles_idx)
 	{
 		m_vehicles[vehicles_idx]->Render();
 	}
@@ -231,8 +215,111 @@ bool Game::HandleKeyPressed(const unsigned char key_code)
 {
 	switch (key_code)
 	{
-	default:
-		return false;
+		case NUM_1_KEY: // Reset steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				m_vehicles[veh_idx]->TurnOffSteering();
+			}
+			return true;
+		}
+		case NUM_2_KEY: // Seek steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->SeekTarget(Vec2::ZERO);
+			}
+			return true;
+		}
+		case NUM_3_KEY: // Flee steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->FleeTarget(Vec2::ZERO);
+			}
+			return true;
+		}
+		case NUM_4_KEY:  // Pursuit steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				const float arrive_at = g_randomNumberGenerator.GetRandomFloatInRange(
+					0.1f,
+					20.0f
+				);
+
+				
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->ArriveAt(m_vehicles[0]->GetPosition(), arrive_at);
+			}
+			return true;
+		}
+		case NUM_5_KEY:  // Pursuit steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+			
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->PursuitOn(m_vehicles[0]);
+			}
+			return true;
+		}
+		case NUM_6_KEY: // Evade steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->EvadeFrom(m_vehicles[0]);
+			}
+			return true;
+		}
+		case NUM_7_KEY: // random Walk steering
+		{
+			for (uint veh_idx = 1; veh_idx < num_enemies; ++veh_idx)
+			{
+				const float radius = g_randomNumberGenerator.GetRandomFloatInRange(
+					1.0f,
+					100.0f
+				);
+
+				const float distance = g_randomNumberGenerator.GetRandomFloatInRange(
+					70.0f,
+					100.0f
+				);
+
+				const float jitter = g_randomNumberGenerator.GetRandomFloatInRange(
+					1.0f,
+					50.0f
+				);
+
+				m_vehicles[veh_idx]->TurnOffSteering();
+				m_vehicles[veh_idx]->WanderAround(radius, distance, jitter);
+			}
+			return true;
+		}
+		case Q_KEY:
+		{
+			num_enemies *= 0.5f;
+			if(num_enemies < MIN_NUM_ENEMIES)
+			{
+				num_enemies = MIN_NUM_ENEMIES;
+			}
+			return true;
+		}
+		case W_KEY:
+		{
+			num_enemies *= 2.0f;
+			if (num_enemies > MAX_NUM_ENEMIES)
+			{
+				num_enemies = MAX_NUM_ENEMIES;
+			}
+			return true;
+		}
+			
+		default:
+			return false;
 	}
 }
 

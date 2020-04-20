@@ -43,7 +43,7 @@ public:
 	~SteeringBehavior();
 
 	Vec2 Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavior);
-	
+
 	Vec2 Seek(const Vec2& target_pos);
 	Vec2 Flee(const Vec2& target_pos);
 	Vec2 Arrive(const Vec2& target_pos);
