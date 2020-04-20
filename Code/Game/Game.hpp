@@ -3,6 +3,7 @@
 #include "Engine/Math/Matrix44.hpp"
 #include "Engine/Core/NamedStrings.hpp"
 #include "Engine/Renderer/RenderContext.hpp"
+#include "Engine/Math/Plane2.hpp"
 
 class Camera;
 class Shader;
@@ -10,6 +11,7 @@ class GPUMesh;
 class Material;
 class BaseEntity;
 class Vehicle;
+class WallEntity;
 
 class Game
 {
@@ -18,8 +20,9 @@ public:
 
 private:
 	//Game objects
-	std::vector<Vehicle*>			m_vehicles;
-	std::vector<BaseEntity*>		m_obstacles;
+	std::vector<Vehicle*>		m_vehicles;
+	std::vector<BaseEntity*>	m_obstacles;
+	std::vector<WallEntity*>	m_worldBounds;
 	
 	//Camera
 	Camera* m_gameCamera = nullptr;
@@ -57,6 +60,7 @@ public:
 	void GarbageCollection() const;
 	void TagObstaclesWithinDisc(BaseEntity* vehicle, float range);
 	const std::vector<BaseEntity*>& GetObstacles() const;
+	const std::vector<WallEntity*>& GetWalls() const;
 	
 private:
 	

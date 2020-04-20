@@ -41,7 +41,8 @@ public:
 	void	EvadeFrom(const Vehicle* moving_target);
 	void	WanderAround(float radius, float distance, float jitter);
 	void	AvoidObstacles(float min_look_ahead, float avoidance_mul, float breaking_weight);
-
+	void	AvoidWalls(uint num_whiskers, float whisker_length, float avoidance_mul, float field_of_view_degrees);
+	
 	//Helppers
 	Game*	GetTheGame() const;
 

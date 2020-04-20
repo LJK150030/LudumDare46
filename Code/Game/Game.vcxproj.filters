@@ -37,6 +37,9 @@
     <ClCompile Include="SteeringBehavior.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="WallEntity.cpp">
+      <Filter>General\Entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -64,6 +67,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="EntityFunctionTemplates.hpp">
+      <Filter>General\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="WallEntity.hpp">
       <Filter>General\Entity</Filter>
     </ClInclude>
   </ItemGroup>

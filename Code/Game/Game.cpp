@@ -1,6 +1,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Vehicle.hpp"
+#include "Game/WallEntity.hpp"
 #include "Game/EntityFunctionTemplates.hpp"
 
 #include "Engine/Core/Vertex_PCU.hpp"
@@ -49,21 +50,63 @@ void Game::Startup()
 		50.0f)
 	);
 	m_obstacles[0]->Init();
+
+
+	m_worldBounds = std::vector<WallEntity*>();
+
+	//East
+	m_worldBounds.push_back(new WallEntity(
+		this, 
+		2.0f * WORLD_HEIGHT, 
+		Vec2(-1.0f, 0.0f),
+		-WORLD_HEIGHT * WORLD_ASPECT
+	));
+	m_worldBounds[0]->Init();
+
+	// North
+	m_worldBounds.push_back(new WallEntity(
+		this,
+		2.0f * WORLD_HEIGHT * WORLD_ASPECT,
+		Vec2(0.0f, -1.0f),
+		-WORLD_HEIGHT
+	));
+	m_worldBounds[1]->Init();
+
+	// West
+	m_worldBounds.push_back(new WallEntity(
+		this,
+		2.0f * WORLD_HEIGHT,
+		Vec2(1.0f, 0.0f),
+		-WORLD_HEIGHT * WORLD_ASPECT
+	));
+	m_worldBounds[2]->Init();
+
+	// South
+	m_worldBounds.push_back(new WallEntity(
+		this,
+		2.0f * WORLD_HEIGHT * WORLD_ASPECT,
+		Vec2(0.0f, 1.0f),
+		-WORLD_HEIGHT
+	));
+	m_worldBounds[3]->Init();
+
+	
 	
 	m_vehicles = std::vector<Vehicle*>();
 	m_vehicles.push_back(new Vehicle(
 		this, 
 		Vec2(-100.0f, 0.0f), 
 		150.0f,
-		Vec2(25.0f,0.0f), 
+		Vec2(50.0f,0.0f), 
 		1.0f, 
 		4.0f, 
 		50.0f, 
 		1.0f, 
 		5.0f));
 
-	m_vehicles[0]->WanderAround(20.0f, 5.0f, 3.6f);
-	m_vehicles[0]->AvoidObstacles(30.0f, 2.0f, 1.0f);
+	m_vehicles[0]->WanderAround(5.0f, 5.0f, 1.6f);
+	m_vehicles[0]->AvoidObstacles(30.0f, 2.0f, 0.25f);
+	m_vehicles[0]->AvoidWalls(3, 30.0f, 2.0f, 45.0f);
 	m_vehicles[0]->Init();
 	
 	const int number_of_vehicles = 10;
@@ -101,7 +144,7 @@ void Game::Startup()
 			Vec2::ZERO,
 			1.0f,
 			4.0f,
-			64.0f,
+			100.0f,
 			1.0f,
 			5.0f));
 
@@ -123,6 +166,15 @@ void Game::Shutdown()
 		m_vehicles[vehicles_idx] = nullptr;
 	}
 
+
+	const int num_walls = static_cast<int>(m_worldBounds.size());
+	for (int wall_idx = 0; wall_idx < num_walls; ++wall_idx)
+	{
+		delete m_worldBounds[wall_idx];
+		m_worldBounds[wall_idx] = nullptr;
+	}
+
+	
 	const int num_obstacles = static_cast<int>(m_obstacles.size());
 	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
 	{
@@ -148,12 +200,6 @@ void Game::Update(const double delta_seconds)
 	{
 		m_vehicles[vehicles_idx]->Update(delta_seconds);
 	}
-
-	const int num_obstacles = static_cast<int>(m_obstacles.size());
-	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
-	{
-		m_obstacles[obstacle_idx]->Update(delta_seconds);
-	}
 }
 
 void Game::Render() const
@@ -178,6 +224,12 @@ void Game::Render() const
 	for (int obstacle_idx = 0; obstacle_idx < num_obstacles; ++obstacle_idx)
 	{
 		m_obstacles[obstacle_idx]->Render();
+	}
+
+	const int num_walls = static_cast<int>(m_worldBounds.size());
+	for (int wall_idx = 0; wall_idx < num_walls; ++wall_idx)
+	{
+		m_worldBounds[wall_idx]->Render();
 	}
 	
 	const int num_vehicles = static_cast<int>(m_vehicles.size());
@@ -205,10 +257,12 @@ bool Game::HandleKeyReleased(const unsigned char key_code)
 	return true;
 }
 
+
 void Game::SetDeveloperMode(const bool on_or_off)
 {
 	m_inDevMode = on_or_off;
 }
+
 
 void Game::GarbageCollection() const
 {
@@ -220,7 +274,14 @@ void Game::TagObstaclesWithinDisc(BaseEntity* vehicle, const float range)
 	TagClosestNeighbors(vehicle, m_obstacles, range);
 }
 
+
 const std::vector<BaseEntity*>& Game::GetObstacles() const
 {
 	return m_obstacles;
+}
+
+
+const std::vector<WallEntity*>& Game::GetWalls() const
+{
+	return m_worldBounds;
 }

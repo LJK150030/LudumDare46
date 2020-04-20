@@ -93,11 +93,13 @@ void Vehicle::Render() const
 	}
 }
 
+
 void Vehicle::SeekTarget(const Vec2& target_pos)
 {
 	m_steering->SetTarget(target_pos);
 	m_behaviors[STEER_SEEK] = true;
 }
+
 
 void Vehicle::FleeTarget(const Vec2& target_pos) 
 {
@@ -105,12 +107,14 @@ void Vehicle::FleeTarget(const Vec2& target_pos)
 	m_behaviors[STEER_FLEE] = true;
 }
 
+
 void Vehicle::ArriveAt(const Vec2& target_pos, const float scalar_modifier)
 {
 	m_steering->SetTarget(target_pos);
 	m_steering->SetArriveModifier(scalar_modifier);
 	m_behaviors[STEER_ARRIVE] = true;
 }
+
 
 void Vehicle::PursuitOn(const Vehicle* moving_target, const float head_on_tolerance_frac, 
 	const float turn_around_modifier)
@@ -121,11 +125,13 @@ void Vehicle::PursuitOn(const Vehicle* moving_target, const float head_on_tolera
 	m_behaviors[STEER_PURSUIT] = true;
 }
 
+
 void Vehicle::EvadeFrom(const Vehicle* moving_target)
 {
 	m_steering->SetMovingTarget(moving_target);
 	m_behaviors[STEER_EVADE] = true;
 }
+
 
 void Vehicle::WanderAround(const float radius, const float distance, const float jitter)
 {
@@ -133,11 +139,20 @@ void Vehicle::WanderAround(const float radius, const float distance, const float
 	m_behaviors[STEER_WANDER] = true;
 }
 
+
 void Vehicle::AvoidObstacles(const float min_look_ahead, const float avoidance_mul,
 	const float breaking_weight)
 {
 	m_steering->SetObstaclesAvoidance(min_look_ahead, avoidance_mul, breaking_weight);
 	m_behaviors[STEER_OBSTACLE_AVOIDANCE] = true;
+}
+
+
+void Vehicle::AvoidWalls(const uint num_whiskers, const float whisker_length, const float avoidance_mul,
+	const float field_of_view_degrees)
+{
+	m_steering->SetWallAvoidance(num_whiskers, whisker_length, avoidance_mul, field_of_view_degrees);
+	m_behaviors[STEER_WALL_AVOIDANCE] = true;
 }
 
 

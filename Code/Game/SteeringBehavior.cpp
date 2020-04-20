@@ -1,5 +1,6 @@
 #include "Game/SteeringBehavior.hpp"
 #include "Game/Vehicle.hpp"
+#include "Game/WallEntity.hpp"
 #include "Game/Game.hpp"
 
 #include "Engine/Math/MathUtils.hpp"
@@ -18,7 +19,7 @@ SteeringBehavior::~SteeringBehavior()
 Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavior)
 {
 	Vec2 resulting_vector = Vec2::ZERO;
-	float num_vectors = 0.0f;
+	//float num_vectors = 0.0f;
 	
 	for(int beh_idx = 0; beh_idx < NUM_STEER_BEHAVIORS; ++beh_idx)
 	{
@@ -36,38 +37,38 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 			}
 			case STEER_SEEK:
 			{
-				resulting_vector += Seek(m_target);
-				num_vectors += 1.0f;
+				resulting_vector = Seek(m_target);
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_FLEE:
 			{
-				resulting_vector += Flee(m_target);
-				num_vectors += 1.0f;
+				resulting_vector = Flee(m_target);
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_ARRIVE:
 			{
-				resulting_vector += Arrive(m_target);
-				num_vectors += 1.0f;
+				resulting_vector = Arrive(m_target);
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_PURSUIT:
 			{
-				resulting_vector += Pursuit(m_movingTarget);
-				num_vectors += 1.0f;
+				resulting_vector = Pursuit(m_movingTarget);
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_EVADE:
 			{
-				resulting_vector += Evade(m_movingTarget);
-				num_vectors += 1.0f;
+				resulting_vector = Evade(m_movingTarget);
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_WANDER:
 			{
-				resulting_vector += Wander();
-				num_vectors += 1.0f;
+				resulting_vector = Wander();
+				//num_vectors += 1.0f;
 				break;
 			}
 			case STEER_OBSTACLE_AVOIDANCE:
@@ -77,14 +78,27 @@ Vec2 SteeringBehavior::Calculate(const std::bitset<NUM_STEER_BEHAVIORS>& behavio
 
 				if(avoid)
 				{
-					return result;
+					resulting_vector = result;
 				}
+				break;
 			}
+			case STEER_WALL_AVOIDANCE:
+			{
+				Vec2 result = Vec2::ZERO;
+				const bool avoid = WallAvoidance(result);
+
+				if (avoid)
+				{
+					resulting_vector = result;
+				}
+				break;
+			}
+			
 		
 		}
 	}
 
-	resulting_vector /= num_vectors;
+	//resulting_vector /= num_vectors;
 	return resulting_vector;
 }
 
@@ -289,6 +303,67 @@ bool SteeringBehavior::ObstacleAvoidance(Vec2& out_vec)
 }
 
 
+bool SteeringBehavior::WallAvoidance(Vec2& out_vec)
+{
+	std::vector<Vec2> whiskers = CreateWhiskers(m_numWhiskers, m_whiskerLength, m_fieldOfViewDegrees,
+		m_vehicle->GetForward(), m_vehicle->GetPosition());
+
+	// Loop through all of the obstacles and tag those that are within the objects bounding radius
+	Game* the_game = m_vehicle->GetTheGame();
+	const std::vector<WallEntity*>& walls = the_game->GetWalls();
+
+	float dist_to_closest_intersection = INFINITY;
+	int closest_wall_idx = -1;
+	bool intersect = false;
+
+	Vec2 steering_force = Vec2::ZERO;
+	Vec2 closest_point = Vec2::ZERO;
+
+	for(int whisk_idx = 0; whisk_idx < m_numWhiskers; ++whisk_idx)
+	{
+		const int num_walls = static_cast<int>(walls.size());
+		for(int wall_idx = 0; wall_idx < num_walls; ++wall_idx)
+		{
+			Vec2 whisker_dir = whiskers[whisk_idx] - m_vehicle->GetPosition();
+			whisker_dir.Normalize();
+			
+			Ray2 whisker_ray(m_vehicle->GetPosition(), whisker_dir);
+			float out_t[2] = { INFINITY, INFINITY };
+			const uint impact = Raycast(out_t, whisker_ray, walls[wall_idx]->GetPlane());
+
+			if(impact)
+			{
+				const Vec2 intersection = whisker_ray.PointAtTime(out_t[0]);
+				
+				//consider the length of the wall (rather than an infinate plane)
+				const Vec2 center_to_intersection = intersection - walls[wall_idx]->GetPosition();
+				const float wall_length = walls[wall_idx]->GetPlanHalfLength();
+				if(center_to_intersection.GetLengthSquared() < wall_length*wall_length)
+				{					
+					if(out_t[0] < m_whiskerLength &&  out_t[0] < dist_to_closest_intersection)
+					{
+						dist_to_closest_intersection = out_t[0];
+						closest_wall_idx = wall_idx;
+						closest_point = intersection;
+					}
+				}
+			}
+		}
+
+		if(closest_wall_idx >= 0)
+		{
+			intersect = true;
+			Vec2 over_shoot = closest_point - whiskers[whisk_idx];
+			const float over_shoot_length = over_shoot.GetLength();
+			steering_force = walls[closest_wall_idx]->GetPlane().m_normal;
+			out_vec = steering_force * over_shoot_length * m_avoidanceMultiplier;
+		}
+	}
+
+	return intersect;
+}
+
+
 float SteeringBehavior::TurnaroundTime(const Vehicle* agent, const Vec2& target_pos, const float coefficient) const
 {
 	Vec2 to_target = target_pos - m_vehicle->GetPosition();
@@ -342,4 +417,15 @@ void SteeringBehavior::SetObstaclesAvoidance(const float min_look_ahead, const f
 	m_minLookAhead = min_look_ahead;
 	m_avoidanceMultiplier = avoidance_mul;
 	m_breakingWeight = breaking_weight;
+}
+
+
+void SteeringBehavior::SetWallAvoidance(const uint num_whiskers, const float whisker_length,
+	const float avoidance_mul,
+	const float field_of_view_degrees)
+{
+	m_numWhiskers = num_whiskers;
+	m_whiskerLength = whisker_length;
+	m_avoidanceMultiplier = avoidance_mul;
+	m_fieldOfViewDegrees = field_of_view_degrees;
 }

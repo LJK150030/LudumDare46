@@ -205,6 +205,7 @@
     <ClCompile Include="MovingEntity.cpp" />
     <ClCompile Include="SteeringBehavior.cpp" />
     <ClCompile Include="Vehicle.cpp" />
+    <ClCompile Include="WallEntity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="MovingEntity.hpp" />
     <ClInclude Include="SteeringBehavior.hpp" />
     <ClInclude Include="Vehicle.hpp" />
+    <ClInclude Include="WallEntity.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\Run\Data\GameConfig.xml" />
