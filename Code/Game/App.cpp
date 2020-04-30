@@ -90,25 +90,30 @@ void App::BeginFrame() const
 	g_theDevConsole->BeginFrame();
 	g_theDebugRenderer->BeginFrame();
 	g_theAudio->BeginFrame();
+
+	m_theGame->BeginFrame();
 }
 
 void App::Update()
 {
+
 	const double current_time = GetCurrentTimeSeconds();
-	double delta_seconds = current_time - m_timeLastFrame;;
+	const double delta_seconds = current_time - m_timeLastFrame;
 	m_timeLastFrame = current_time;
 
 	g_theClock->Step(delta_seconds);
 	g_theDevConsole->Update(g_theClock->m_frameTime);
 	m_theGame->Update(g_theClock->m_frameTime);
+
+	m_theGame->UpdateImGui(delta_seconds);
 }
 
 void App::Render() const
 {
 	// Draw a line from the bottom-left corner of the screen (0,0) to the center of the screen (50,50)
 	m_theGame->Render();
+	m_theGame->RenderImGui();
 	g_theDebugRenderer->RenderToScreen();
-
 
 	if(DEV_CONSOLE_IN_USE)
 	{
@@ -132,6 +137,8 @@ void App::EndFrame() const
 	g_theDevConsole->EndFrame();
 	g_theDebugRenderer->EndFrame();
 	g_theAudio->EndFrame();
+
+	m_theGame->EndFrame();
 }
 
 
@@ -158,14 +165,20 @@ bool App::HandleKeyPressed(const unsigned char key_code)
 			m_isQuitting = true;
 		return true;
 
-	case T_KEY:
+	case O_KEY:
 		if (!DEV_CONSOLE_IN_USE)
+		{
 			m_isSlowMo = true;
+			g_theClock->Dilate(0.25f);
+		}
 		return true;
 
 	case P_KEY:
 		if (!DEV_CONSOLE_IN_USE)
+		{
 			m_isPaused = true;
+			g_theClock->ForcePause();
+		}
 		return true;
 
 	case F1_KEY:
@@ -194,13 +207,20 @@ bool App::HandleKeyReleased(const unsigned char key_code)
 {
 	switch (key_code)
 	{
-	case T_KEY:
-		m_isSlowMo = false;
-		return true;
+	case O_KEY:
+		{
+			g_theClock->Dilate(1.0f);
+			m_isSlowMo = false;
+			return true;	
+		}
 
 	case P_KEY:
-		m_isPaused = false;
-		return true;
+		{
+			m_isPaused = false;
+			g_theClock->ForceResume();
+			return true;
+		}
+		
 
 	case F1_KEY:
 		m_theGame->SetDeveloperMode(false);

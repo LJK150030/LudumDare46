@@ -51,7 +51,6 @@ public:
 
 private:
 	void InitVisuals() override;
-	void UpdateModelMatrix(const Vec2& new_pos);
 	
 	void InitDebugVisuals();
 	void UpdateDebugArrows(const Vec2& steering_force);

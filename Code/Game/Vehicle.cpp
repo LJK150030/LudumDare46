@@ -51,29 +51,38 @@ void Vehicle::Update(const double delta_seconds)
 
 	// Acceleration = force/mass
 	const Vec2 acceleration = steering_force * m_inverseMass;
-	
+
 	// Velocity = v_0 + a*t
 	m_velocity += acceleration * static_cast<float>(delta_seconds);
-	m_velocity.ClampLength(m_maxSpeed);
+	const float vel_length_sqrd = m_velocity.GetLengthSquared();
 
-	Vec2 pos = GetPosition();
-	pos += m_velocity * static_cast<float>(delta_seconds);
-
-	// always update the local coordinate unless we are not moving
-		// if 0.0f then we divide by zero
-		// if VARY small, we might have floating point precision error
-	if(m_velocity.GetLengthSquared() > 0.000001f)
+	// if 0.0f then we divide by zero
+	// if VARY small, we might have floating point precision error
+	if (vel_length_sqrd > 0.000001f)
 	{
-		SetForward(m_velocity.GetNormalized());
+		const Vec2 vel_norm = m_velocity.GetNormalized();
+		SetForward(vel_norm);
+
+		if(vel_length_sqrd > m_maxSpeed * m_maxSpeed)
+		{
+			m_velocity = vel_norm * m_maxSpeed;
+		}
 	}
 
-	// for debugging, if the point goes off screen, wrap it around
-	pos.WrapAround(-1.0f * WORLD_HEIGHT * WORLD_ASPECT,
-		-1.0f * WORLD_HEIGHT, WORLD_HEIGHT * WORLD_ASPECT, WORLD_HEIGHT);
+	
+	Vec2 new_world_pos = GetPosition();
+	new_world_pos += m_velocity * static_cast<float>(delta_seconds);
+	
+	new_world_pos.WrapAround(
+		-1.0f * WORLD_HEIGHT * WORLD_ASPECT,
+		-1.0f * WORLD_HEIGHT, 
+		WORLD_HEIGHT * WORLD_ASPECT, 
+		WORLD_HEIGHT_ADJUST
+	);
+	
+	SetPos(new_world_pos);
 
 	
-	UpdateModelMatrix(pos);
-
 	if(m_theGame->m_inDevMode)
 	{
 		UpdateDebugArrows(steering_force);
@@ -83,7 +92,8 @@ void Vehicle::Update(const double delta_seconds)
 
 void Vehicle::Render() const
 {
-	g_theRenderer->BindModelMatrix(m_modelMatrix);
+	Matrix44 model_matrix(m_modelMatrix);
+	g_theRenderer->BindModelMatrix(model_matrix);
 	g_theRenderer->BindMaterial(*m_material);
 	g_theRenderer->DrawMesh(*m_mesh);
 
@@ -219,16 +229,6 @@ void Vehicle::InitDebugVisuals()
 	CpuMeshAddLine(&steering_line_mesh, Vec2::ZERO, Vec2(1.0f, 0.0f), 1.0f, Rgba::BLACK);
 	m_steeringMesh = new GPUMesh(g_theRenderer);
 	m_steeringMesh->CreateFromCPUMesh<Vertex_Lit>(steering_line_mesh);
-}
-
-
-void Vehicle::UpdateModelMatrix(const Vec2& new_pos)
-{
-	SetPos(new_pos);
-	const float cur_rot_deg = GetRotationDegrees();
-	const Matrix44 rotation_matrix = Matrix44::MakeZRotationDegrees(cur_rot_deg);
-	m_modelMatrix.SetRotationMatrix(rotation_matrix);
-
 }
 
 

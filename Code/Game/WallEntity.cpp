@@ -5,6 +5,8 @@
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Shader.hpp"
 
+#include "Engine/Math/MathUtils.hpp"
+
 WallEntity::WallEntity(Game* game, const float wall_length, const Vec2& forward, const float signed_distance):
 	BaseEntity(ENTITY_WALL), m_theGame(game), m_plane(forward, signed_distance),
 	m_wallHalfLength(wall_length*0.5f)
@@ -52,7 +54,8 @@ void WallEntity::Update(double delta_seconds)
 
 void WallEntity::Render() const
 {
-	g_theRenderer->BindModelMatrix(m_modelMatrix);
+	const Matrix44 model_matrix(m_modelMatrix);
+	g_theRenderer->BindModelMatrix(model_matrix);
 	g_theRenderer->BindMaterial(*m_material);
 	g_theRenderer->DrawMesh(*m_mesh);
 }

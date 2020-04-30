@@ -32,8 +32,7 @@ private:
 	bool m_isPaused = false;
 	bool m_isSlowMo = false;
 
-	//float m_deltaSeconds = (1.0f / 60.0f);
-	double m_timeLastFrame = 0.0f;
+	double m_timeLastFrame = 0.0;
 	Game* m_theGame;
 
 	Camera* m_devCamera = nullptr;

@@ -38,6 +38,6 @@ public:
 	void SetMaxSpeed(float new_max_speed);
 	void SetMaxForce(float new_max_force);
 	void SetForward(const Vec2& new_forward_normal);
-	bool RotateForwardToFaceTarget(const Vec2& target_pos);
 	void SetMaxTurnSpeed(float new_turn_speed_deg);
+	//bool RotateForwardToFaceTarget(const Vec2& target_pos);
 };

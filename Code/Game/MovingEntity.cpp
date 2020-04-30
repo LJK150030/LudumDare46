@@ -2,7 +2,6 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/Matrix33.hpp"
 
 MovingEntity::MovingEntity(const Vec2& position, float bound_radius, const Vec2& velocity, 
 	float max_speed, const Vec2& forward_norm, float mass, const Vec2& scale, 
@@ -120,40 +119,41 @@ void MovingEntity::SetForward(const Vec2& new_forward_normal)
 }
 
 
-bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
-{
-	const Vec2 pos = GetPosition();
-	Vec2 pos_to_target = target_pos - pos;
-	pos_to_target.Normalize();
-
-	// A dot B = |A|*|B|*cos(theta)
-	const Vec2 forward = GetForward();
-	const float dot_product = DotProduct(forward, pos_to_target);
-	const float angle_radians = ArcCosRadians(dot_product);
-
-	// If we are facing it, then we don't need to rotate
-	if(IsZero(angle_radians))
-	{
-		return true;
-	}
-
-	// otherwise clamp to rotating speed
-	float angle_degrees = ConvertRadiansToDegrees(angle_radians);
-	if(angle_degrees > m_maxTurnSpeedDeg)
-	{
-		angle_degrees = m_maxTurnSpeedDeg;
-	}
-
-	//using matrix to rotate the forward vector
-	const float sign = forward.GetRotationSignFromDir(pos_to_target);
-	const float rotate_deg = angle_degrees * sign;
-	const Matrix44 rotation_matrix = Matrix44::MakeZRotationDegrees(rotate_deg);
-	m_modelMatrix.SetRotationMatrix(rotation_matrix);
-
-	m_velocity = m_modelMatrix.GetTransformVector2D(m_velocity);
-	
-	return false;
-}
+// bool MovingEntity::RotateForwardToFaceTarget(const Vec2& target_pos)
+// {
+// 	const Vec2 pos = GetPosition();
+// 	Vec2 pos_to_target = target_pos - pos;
+// 	pos_to_target.Normalize();
+// 
+// 	// A dot B = |A|*|B|*cos(theta)
+// 	const Vec2 forward = GetForward();
+// 	const float dot_product = DotProduct(forward, pos_to_target);
+// 	const float angle_radians = ArcCosRadians(dot_product);
+// 
+// 	// If we are facing it, then we don't need to rotate
+// 	if(IsZero(angle_radians))
+// 	{
+// 		return true;
+// 	}
+// 
+// 	// otherwise clamp to rotating speed
+// 	float angle_degrees = ConvertRadiansToDegrees(angle_radians);
+// 	if(angle_degrees > m_maxTurnSpeedDeg)
+// 	{
+// 		angle_degrees = m_maxTurnSpeedDeg;
+// 	}
+// 
+// 	//using matrix to rotate the forward vector
+// 	const float sign = forward.GetRotationSignFromDir(pos_to_target);
+// 	const float rotate_deg = angle_degrees * sign;
+// 	Matrix33 rotation_matrix;
+// 	rotation_matrix.RotateDeg(rotate_deg);
+// 	m_modelMatrix.Rotate(rotation_matrix);
+// 
+// 	m_velocity = m_modelMatrix.GetTransformVector2D(m_velocity);
+// 	
+// 	return false;
+// }
 
 
 void MovingEntity::SetMaxTurnSpeed(const float new_turn_speed_deg)

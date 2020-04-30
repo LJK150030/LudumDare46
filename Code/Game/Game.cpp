@@ -13,6 +13,8 @@
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
 #include "Engine/Core/Vertex_PCU.hpp"
+#include "Engine/Renderer/ImGUISystem.hpp"
+#include "Engine/Core/Clock.hpp"
 
 
 Game::Game()
@@ -59,7 +61,7 @@ void Game::Startup()
 		this,
 		2.0f * WORLD_HEIGHT * WORLD_ASPECT,
 		Vec2(0.0f, -1.0f),
-		-WORLD_HEIGHT
+		-WORLD_HEIGHT_ADJUST
 	));
 	m_worldBounds[1]->Init();
 
@@ -164,6 +166,12 @@ void Game::Shutdown()
 	m_gameCamera = nullptr;
 }
 
+void Game::BeginFrame()
+{
+	g_imGUI->BeginFrame();
+	ImGui::NewFrame();
+}
+
 
 void Game::Update(const double delta_seconds)
 {
@@ -175,6 +183,79 @@ void Game::Update(const double delta_seconds)
 		m_vehicles[vehicles_idx]->Update(delta_seconds);
 	}
 }
+
+
+void Game::UpdateImGui(double delta_seconds)
+{
+	m_imguiError = ImGui::Begin(
+		"Game State",
+		&m_show,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoSavedSettings
+	);
+
+	ImGui::SetWindowSize(
+		ImVec2(1725.0f, 120.0f),
+		ImGuiCond_Always
+	);
+
+	ImGui::SetWindowPos(
+		ImVec2(0.0f, 0.0f),
+		ImGuiCond_Always
+	);
+
+	ImGui::TextColored(
+		ImVec4(0.5529f, 1.0f, 1.0f, 1.0f),
+		"Num Agents = %u",
+		num_enemies);
+
+	if(!g_theClock->IsPaused())
+	{
+		const float fps = 1.0f / static_cast<float>(delta_seconds);
+		m_avgFPS = CalcAverageTick(fps);
+
+		m_tickList[m_tickHead] = fps;
+		if (++m_tickHead == g_maxTickPlot)    /* inc buffer index */
+		{
+			m_tickHead = 0;
+		}
+	}
+	
+	char overlay[32];
+	sprintf(overlay, "avg %f", m_avgFPS);
+	ImGui::PlotLines(
+		"FPS",
+		m_tickList,
+		g_maxTickPlot,
+		m_tickHead,
+		overlay,
+		0.0f,
+		400.0f,
+		ImVec2(1600, 65)
+	);
+
+	ImGui::SameLine();
+	
+	ImGui::PlotHistogram(
+		"avg", 
+		&m_avgFPS, 
+		1, 
+		0, 
+		nullptr, 
+		0.0f, 
+		400.0f, 
+		ImVec2(20, 65));
+
+	ImGui::End();
+}
+
+void Game::RenderImGui() const
+{
+	g_imGUI->Render();
+}
+
 
 void Game::Render() const
 {
@@ -210,6 +291,13 @@ void Game::Render() const
 	g_theRenderer->EndCamera(m_gameCamera);
 	g_theDebugRenderer->RenderToCamera(m_gameCamera);
 }
+
+
+void Game::EndFrame()
+{
+	g_imGUI->EndFrame();
+}
+
 
 bool Game::HandleKeyPressed(const unsigned char key_code)
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp" 
-#include "Engine/Math/Matrix44.hpp"
+#include "Engine/Math/Matrix33.hpp"
 
 class GPUMesh;
 class Material;
@@ -11,7 +11,7 @@ protected:
 	float	m_boundingRadius;
 
 	//Render Data
-	Matrix44	m_modelMatrix = Matrix44::IDENTITY;
+	Matrix33	m_modelMatrix = Matrix33::IDENTITY;
 	Material*	m_material = nullptr;
 	GPUMesh*	m_mesh = nullptr;
 	

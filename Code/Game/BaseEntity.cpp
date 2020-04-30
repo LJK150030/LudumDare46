@@ -46,7 +46,8 @@ void BaseEntity::Update(const double delta_seconds)
 
 void BaseEntity::Render() const
 {
-	g_theRenderer->BindModelMatrix(m_modelMatrix);
+	const Matrix44 model_matrix(m_modelMatrix);
+	g_theRenderer->BindModelMatrix(model_matrix);
 	g_theRenderer->BindMaterial(*m_material);
 	g_theRenderer->DrawMesh(*m_mesh);
 }
@@ -76,13 +77,13 @@ void BaseEntity::InitVisuals()
 
 Vec2 BaseEntity::GetPosition() const
 {
-	return m_modelMatrix.GetPosition2D();
+	return m_modelMatrix.GetPosition();
 }
 
 
 Vec2 BaseEntity::GetScale() const
 {
-	return m_modelMatrix.GetScale2D();
+	return m_modelMatrix.GetScale();
 }
 
 

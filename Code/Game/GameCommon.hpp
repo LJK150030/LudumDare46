@@ -31,6 +31,8 @@ constexpr float WORLD_HEIGHT = 100.0f;
 constexpr float WORLD_CENTER_X = (WORLD_HEIGHT * WORLD_ASPECT) / 2.f;
 constexpr float WORLD_CENTER_Y = WORLD_HEIGHT / 2.f;
 
+constexpr float WORLD_HEIGHT_ADJUST = 75.0f;
+
 // key codes
 constexpr int SHIFT_KEY = 16;
 constexpr int ESC_KEY = 27;
@@ -83,6 +85,15 @@ constexpr int TILDE_KEY = 192;
 // camera global variables
 constexpr float MAX_SCREEN_SHAKE = 2.0f;
 constexpr float SCREEN_SHAKE_REDUCTION = 1.0f;
+
+//FPS values
+constexpr int g_maxTickPlot = 4'096;
+constexpr int g_maxTickSample = 256;
+inline int g_tickIndex = 0;
+inline float g_tickSum = 0;
+inline float g_tickList[g_maxTickSample] = {0};
+
+float CalcAverageTick(float new_tick);
 
 //One-off drawing functions
 void DrawLine(const Vec2& start, const Vec2& end, float thickness, const Rgba& tint);

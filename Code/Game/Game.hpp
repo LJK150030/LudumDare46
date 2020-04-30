@@ -4,6 +4,7 @@
 #include "Engine/Core/NamedStrings.hpp"
 #include "Engine/Renderer/RenderContext.hpp"
 #include "Engine/Math/Plane2.hpp"
+#include "GameCommon.hpp"
 
 class Camera;
 class Shader;
@@ -22,7 +23,7 @@ private:
 	//Game objects
 	uint num_enemies = 4;
 	const uint MIN_NUM_ENEMIES = 1;
-	const uint MAX_NUM_ENEMIES = 16'383;
+	const uint MAX_NUM_ENEMIES = 4'096;
 	uint vehicle_head_idx = 0;
 	
 	std::vector<Vehicle*>		m_vehicles;
@@ -40,6 +41,9 @@ private:
 	float m_cameraTime = 0.0f;
 	int m_currentFrame = 0;
 
+	float m_tickList[g_maxTickPlot] = { 0 };
+	float m_avgFPS = 0.0f;
+	int m_tickHead = 0;
 
 public:
 	Game();
@@ -51,6 +55,10 @@ public:
 	void Render() const;
 	void Shutdown();
 
+	void BeginFrame();
+	void UpdateImGui(double delta_seconds);
+	void RenderImGui() const;
+	void EndFrame();
 	//input
 	bool HandleKeyPressed(unsigned char key_code);
 	bool HandleKeyReleased(unsigned char key_code);
@@ -64,5 +72,6 @@ public:
 	
 private:
 	
-
+	bool	m_show = true;
+	bool	m_imguiError = false;
 };
